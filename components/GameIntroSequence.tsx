@@ -58,7 +58,7 @@ export const GameIntroSequence: React.FC<GameIntroSequenceProps> = ({
         safeComplete();
       }, fallbackMs);
     }
-  }, [isVisible, onComplete, hasStarted]);
+  }, [isVisible, onComplete, hasStarted, safeComplete]);
 
   useEffect(() => {
     return () => {

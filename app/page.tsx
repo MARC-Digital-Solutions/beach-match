@@ -331,7 +331,7 @@ export default function HomePage() {
               <div className="text-center min-w-0">
                 <div className="text-red-400 text-xs font-semibold">🎵 NOW PLAYING</div>
                 <div className="text-white text-sm font-bold truncate max-w-xs">
-                  {nowPlaying.title || '98.5 The Beach Live'}
+                  {nowPlaying.title || "98.5 The Beach Live"}
                 </div>
               </div>
             </div>

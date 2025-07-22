@@ -265,7 +265,7 @@ export function useBeachMatch() {
       setBoardHasFlashed(false);
       setBoardFlash(false);
     }
-  }, [gameState.lives]);
+  }, [gameState.lives, gameOverCountdown]);
 
   // --- Move these up so they are declared before use ---
   const triggerPieceSpecificQuiz = useCallback(async (pieceType: string) => {
@@ -542,62 +542,96 @@ export function useBeachMatch() {
       }
     }));
 
-    setGameState(prevState => {
-      if (prevState.isGameOver || prevState.isPaused) return prevState;
-
-      const clickedPiece = prevState.grid[row][col];
-      if (!clickedPiece) return prevState;
-
-      // If piece has power-up, activate it
-      if (clickedPiece.isSpecial && clickedPiece.powerUp) {
-        // Handle power-up activation separately
-        setTimeout(() => activatePowerUp(clickedPiece.powerUp!, row, col), 0);
-        return prevState;
-      }
-
-      // Handle piece selection for swapping
-      if (!prevState.selectedPiece) {
-        AudioManager.playSwapSound();
-        return {
+    // Handle piece selection and swapping
+    if (swappingPieces.length === 0) {
+      // First piece selected
+      setSwappingPieces([{ row, col }]);
+      setGameState(prevState => ({
+        ...prevState,
+        selectedPiece: { row, col }
+      }));
+    } else if (swappingPieces.length === 1) {
+      const firstPiece = swappingPieces[0];
+      
+      // Check if clicking the same piece (deselect)
+      if (firstPiece.row === row && firstPiece.col === col) {
+        setSwappingPieces([]);
+        setGameState(prevState => ({
           ...prevState,
-          selectedPiece: { row, col }
-        };
-      } else {
-        const { row: selectedRow, col: selectedCol } = prevState.selectedPiece;
-
-        // If clicking the same piece, deselect
-        if (selectedRow === row && selectedCol === col) {
-          return {
-            ...prevState,
-            selectedPiece: null
-          };
-        }
-
-        // Check if swap is valid
-        if (BeachMatchEngine.canSwapPieces(prevState.grid, selectedRow, selectedCol, row, col)) {
-          setIsProcessing(true);
-          setSwappingPieces([{row: selectedRow, col: selectedCol}, {row, col}]);
-          setTimeout(() => setSwappingPieces([]), 180);
-          // Perform the swap
-          const newGrid = BeachMatchEngine.swapPieces(prevState.grid, selectedRow, selectedCol, row, col);
-          // Process matches after swap
-          setTimeout(() => {
-            processMatches(newGrid);
-          }, 100);
+          selectedPiece: null
+        }));
+        return;
+      }
+      
+      // Check if adjacent
+      const isAdjacent = (
+        (Math.abs(firstPiece.row - row) === 1 && firstPiece.col === col) ||
+        (Math.abs(firstPiece.col - col) === 1 && firstPiece.row === row)
+      );
+      
+      if (isAdjacent) {
+        // Attempt swap
+        setIsProcessing(true);
+        setSwappingPieces([firstPiece, { row, col }]);
+        
+        setGameState(prevState => {
+          const newGrid = [...prevState.grid.map(row => [...row])];
+          const temp = newGrid[firstPiece.row][firstPiece.col];
+          newGrid[firstPiece.row][firstPiece.col] = newGrid[row][col];
+          newGrid[row][col] = temp;
+          
           return {
             ...prevState,
             grid: newGrid,
             selectedPiece: null
           };
-        } else {
-          // Invalid swap - deselect
-          return {
-            ...prevState,
-            selectedPiece: null
-          };
-        }
+        });
+        
+        // Check for matches after swap
+        setTimeout(() => {
+          setGameState(prevState => {
+            const matches = BeachMatchEngine.findMatches(prevState.grid);
+            if (matches.length > 0) {
+              // Valid swap - process matches
+              processMatches(prevState.grid);
+            } else {
+              // Invalid swap - revert
+              const revertedGrid = [...prevState.grid.map(row => [...row])];
+              const temp = revertedGrid[firstPiece.row][firstPiece.col];
+              revertedGrid[firstPiece.row][firstPiece.col] = revertedGrid[row][col];
+              revertedGrid[row][col] = temp;
+              
+              setGameState(prev => ({
+                ...prev,
+                grid: revertedGrid
+              }));
+              
+              // Check for game over after invalid move
+              if (!BeachMatchEngine.hasValidMoves(revertedGrid)) {
+                setGameOverCountdown(60);
+                setBoardFlash(true);
+                setTimeout(() => setBoardFlash(false), 2000);
+              }
+            }
+            
+            return {
+              ...prevState,
+              selectedPiece: null
+            };
+          });
+          
+          setSwappingPieces([]);
+          setIsProcessing(false);
+        }, 300);
+      } else {
+        // Not adjacent - select new piece
+        setSwappingPieces([{ row, col }]);
+        setGameState(prevState => ({
+          ...prevState,
+          selectedPiece: { row, col }
+        }));
       }
-    });
+    }
   }, [isProcessing, hasMadeFirstMove, setIsProcessing, setSwappingPieces, setGameState, setBoardFlash, setGameOverCountdown, setHasMadeFirstMove, activatePowerUp, processMatches]);
 
   return {
