@@ -71,8 +71,27 @@ export function useBeachMatch() {
     EngagementTracker.loadEngagementData();
     EventManager.initializeEvents();
     
+    // Add event listener for immediate hint clearing
+    const handleClearHints = () => {
+      console.log('[ClearHints] Event received - clearing hints immediately');
+      setGameState(prev => ({
+        ...prev,
+        hintState: {
+          ...prev.hintState,
+          isVisible: false
+        }
+      }));
+      if (hintTimerRef.current) {
+        clearTimeout(hintTimerRef.current);
+        hintTimerRef.current = null;
+      }
+    };
+    
+    window.addEventListener('clearHints', handleClearHints);
+    
     return () => {
       EventManager.cleanup();
+      window.removeEventListener('clearHints', handleClearHints);
       if (gameLoopRef.current) {
         clearInterval(gameLoopRef.current);
       }
@@ -127,6 +146,12 @@ export function useBeachMatch() {
     if (!gameStateRef.current.isGameOver && !gameStateRef.current.isPaused && gameStateRef.current.noActivityStart) {
       const delay = 3000; // 3 seconds for hints (increased from 2)
       const showHint = () => {
+        // Double-check that hints should still be shown
+        if (gameStateRef.current.isGameOver || gameStateRef.current.isPaused || !hasMadeFirstMoveRef.current || boardFlash) {
+          console.log('[HintTimer] Cancelling hint - game state changed');
+          return;
+        }
+        
         const possibleMatch = BeachMatchEngine.findPossibleMatch(gameStateRef.current.grid);
         console.log('[HintTimer] showHint called. possibleMatch:', possibleMatch);
         if (possibleMatch) {
@@ -522,7 +547,7 @@ export function useBeachMatch() {
 
   // --- Now use them in handlePieceClick ---
   const handlePieceClick = useCallback((row: number, col: number) => {
-    console.log('[handlePieceClick] called. isProcessing:', isProcessing, 'hasMadeFirstMove:', hasMadeFirstMove);
+    console.log('[handlePieceClick] called. isProcessing:', isProcessing, 'hasMadeFirstMove:', hasMadeFirstMove, 'hintState:', gameState.hintState);
     if (isProcessing) return;
 
     // Set hasMadeFirstMove on first valid click
@@ -532,7 +557,7 @@ export function useBeachMatch() {
     }
     console.log('Piece clicked:', row, col);
 
-    // Reset activity timer and hide any visible hints
+    // Immediately clear any visible hints to prevent interference
     setGameState(prevState => ({
       ...prevState,
       noActivityStart: Date.now(),

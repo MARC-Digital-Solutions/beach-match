@@ -142,7 +142,15 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                         ${isProcessing ? 'pointer-events-none opacity-70' : ''}
                         ${isSwapping ? 'piece-swap animate-bounce' : ''}
                       `}
-                      onClick={() => onPieceClick(rowIndex, colIndex)}
+                      onClick={() => {
+                        // Immediately clear hints when piece is clicked
+                        if (hintState?.isVisible) {
+                          // Force immediate hint clearing
+                          const event = new CustomEvent('clearHints');
+                          window.dispatchEvent(event);
+                        }
+                        onPieceClick(rowIndex, colIndex);
+                      }}
                       disabled={!piece || isProcessing}
                     >
                       {piece && (
@@ -152,7 +160,7 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                       )}
                       {/* Hint star overlay - no scaling, just a flashing star */}
                       {isHinted && hintState?.isVisible && (
-                        <span className="absolute inset-0 flex items-center justify-center pointer-events-none z-40">
+                        <span className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                           <span className="text-yellow-300 text-2xl animate-hint-star-glow animate-pulse drop-shadow-md">⭐️</span>
                         </span>
                       )}
