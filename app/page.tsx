@@ -221,7 +221,7 @@ export default function HomePage() {
         
         setNowPlaying({
           title: title || '98.5 The Beach Live',
-          artist: artist || 'Space Coast\'s Greatest Hits',
+          artist: artist || 'Space Coast&apos;s Greatest Hits',
           albumArt: albumArt || '',
           duration: 0
         });
@@ -230,7 +230,7 @@ export default function HomePage() {
         console.error('Could not fetch metadata:', error);
         setNowPlaying({
           title: '98.5 The Beach Live',
-          artist: 'Space Coast\'s Greatest Hits',
+          artist: 'Space Coast&apos;s Greatest Hits',
         });
       }
     };
@@ -283,7 +283,7 @@ export default function HomePage() {
               {nowPlaying.title || '98.5 The Beach Live'}
             </div>
             <div className="text-blue-200 text-sm truncate mb-2">
-              {nowPlaying.artist || 'Space Coast\'s Greatest Hits'}
+              {nowPlaying.artist || 'Space Coast&apos;s Greatest Hits'}
             </div>
             {/* Player Controls */}
             <div className="mb-3">
@@ -302,7 +302,7 @@ export default function HomePage() {
             </div>
             {/* Space Coast Banner */}
             <div className="bg-gradient-to-r from-red-600 to-red-700 text-white text-center py-2 px-2 text-xs font-semibold rounded-lg flex flex-col items-center justify-center leading-tight">
-              <div>SPACE COAST'S GREATEST HITS</div>
+              <div>SPACE COAST&apos;S GREATEST HITS</div>
               <div>LIVE FROM MELBOURNE, FLORIDA</div>
             </div>
           </div>
@@ -708,7 +708,7 @@ export default function HomePage() {
                 <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-4 text-center">
                   <div className="text-4xl mb-3">🚀</div>
                   <h3 className="text-white font-bold mb-2">Space Coast Tourism</h3>
-                  <p className="text-blue-200 text-sm mb-3">Explore Florida's Space Coast</p>
+                  <p className="text-blue-200 text-sm mb-3">Explore Florida&apos;s Space Coast</p>
                   <button 
                     onClick={() => handleSponsorClick('ad')}
                     className="bg-white text-purple-600 font-bold py-2 px-4 rounded-lg hover:bg-purple-50 transition-colors duration-200 w-full"

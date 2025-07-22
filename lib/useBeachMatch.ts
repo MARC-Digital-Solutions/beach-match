@@ -267,85 +267,42 @@ export function useBeachMatch() {
     }
   }, [gameState.lives]);
 
-  // Handle piece selection and swapping
-  const handlePieceClick = useCallback((row: number, col: number) => {
-    console.log('[handlePieceClick] called. isProcessing:', isProcessing, 'hasMadeFirstMove:', hasMadeFirstMove);
-    if (isProcessing) return;
+  // --- Move these up so they are declared before use ---
+  const triggerPieceSpecificQuiz = useCallback(async (pieceType: string) => {
+    const quizType = BeachMatchEngine.determineQuizType(pieceType as any);
+    if (!quizType) return;
 
-    // Set hasMadeFirstMove on first valid click
-    if (!hasMadeFirstMove) {
-      setHasMadeFirstMove(true);
-      console.log('First move made!');
+    let question: QuizQuestion | null = null;
+    if (quizType === 'song') {
+      question = await AudioManager.getRandomSongQuestion();
+    } else {
+      question = AudioManager.getQuestionByType(quizType);
     }
-    console.log('Piece clicked:', row, col);
+    setCurrentSongQuestion(question);
+    setShowSongQuiz(true);
+    setSongQuizTimer(30);
 
-    // Reset activity timer and hide any visible hints
-    setGameState(prevState => ({
-      ...prevState,
-      noActivityStart: Date.now(),
-      hintState: {
-        ...prevState.hintState,
-        isVisible: false
-      }
-    }));
+    console.log(`🎯 ${quizType} quiz triggered for ${pieceType}!`);
 
-    setGameState(prevState => {
-      if (prevState.isGameOver || prevState.isPaused) return prevState;
-
-      const clickedPiece = prevState.grid[row][col];
-      if (!clickedPiece) return prevState;
-
-      // If piece has power-up, activate it
-      if (clickedPiece.isSpecial && clickedPiece.powerUp) {
-        // Handle power-up activation separately
-        setTimeout(() => activatePowerUp(clickedPiece.powerUp!, row, col), 0);
-        return prevState;
-      }
-
-      // Handle piece selection for swapping
-      if (!prevState.selectedPiece) {
-        AudioManager.playSwapSound();
-        return {
-          ...prevState,
-          selectedPiece: { row, col }
-        };
-      } else {
-        const { row: selectedRow, col: selectedCol } = prevState.selectedPiece;
-
-        // If clicking the same piece, deselect
-        if (selectedRow === row && selectedCol === col) {
-          return {
-            ...prevState,
-            selectedPiece: null
-          };
+    // Start countdown timer
+    const timer = setInterval(() => {
+      setSongQuizTimer(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          // Time's up - close modal with no penalty
+          setShowSongQuiz(false);
+          setCurrentSongQuestion(null);
+          return 0;
         }
+        return prev - 1;
+      });
+    }, 1000);
+  }, [setCurrentSongQuestion, setShowSongQuiz, setSongQuizTimer]);
 
-        // Check if swap is valid
-        if (BeachMatchEngine.canSwapPieces(prevState.grid, selectedRow, selectedCol, row, col)) {
-          setIsProcessing(true);
-          setSwappingPieces([{row: selectedRow, col: selectedCol}, {row, col}]);
-          setTimeout(() => setSwappingPieces([]), 180);
-          // Perform the swap
-          const newGrid = BeachMatchEngine.swapPieces(prevState.grid, selectedRow, selectedCol, row, col);
-          // Process matches after swap
-          setTimeout(() => {
-            processMatches(newGrid);
-          }, 100);
-          return {
-            ...prevState,
-            grid: newGrid,
-            selectedPiece: null
-          };
-        } else {
-          // Invalid swap - deselect
-          return {
-            ...prevState,
-            selectedPiece: null
-          };
-        }
-      }
-    });
-  }, [isProcessing, hasMadeFirstMove]);
+  const triggerWaveCrash = useCallback(() => {
+    console.log('🌊 Triggering wave crash!');
+    setShowWaveCrash(true);
+  }, [setShowWaveCrash]);
 
   const processMatches = useCallback(async (grid: (GamePiece | null)[][]) => {
     let currentGrid = [...grid.map(row => [...row])];
@@ -449,7 +406,7 @@ export function useBeachMatch() {
     });
 
     setIsProcessing(false);
-  }, []);
+  }, [setGameState, setBoardFlash, setIsProcessing, setIsShuffling, triggerPieceSpecificQuiz, triggerWaveCrash]);
 
   const activatePowerUp = useCallback((powerUpType: any, row: number, col: number) => {
     setIsProcessing(true);
@@ -470,43 +427,7 @@ export function useBeachMatch() {
         noActivityStart: Date.now() // Reset activity timer
       };
     });
-  }, [processMatches]);
-
-  const triggerPieceSpecificQuiz = useCallback(async (pieceType: string) => {
-    const quizType = BeachMatchEngine.determineQuizType(pieceType as any);
-    if (!quizType) return;
-
-    let question: QuizQuestion | null = null;
-    if (quizType === 'song') {
-      question = await AudioManager.getRandomSongQuestion();
-    } else {
-      question = AudioManager.getQuestionByType(quizType);
-    }
-    setCurrentSongQuestion(question);
-    setShowSongQuiz(true);
-    setSongQuizTimer(30);
-
-    console.log(`🎯 ${quizType} quiz triggered for ${pieceType}!`);
-
-    // Start countdown timer
-    const timer = setInterval(() => {
-      setSongQuizTimer(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          // Time's up - close modal with no penalty
-          setShowSongQuiz(false);
-          setCurrentSongQuestion(null);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  }, []);
-
-  const triggerWaveCrash = useCallback(() => {
-    console.log('🌊 Triggering wave crash!');
-    setShowWaveCrash(true);
-  }, []);
+  }, [processMatches, setIsProcessing, setGameState]);
 
   const handleWaveCrashComplete = useCallback(() => {
     console.log('🌊 Wave crash complete, reshuffling board');
@@ -518,7 +439,7 @@ export function useBeachMatch() {
       selectedPiece: null,
       noActivityStart: Date.now()
     }));
-  }, []);
+  }, [setShowWaveCrash, setGameState]);
 
   const handleSongQuizAnswer = useCallback((selectedAnswer: number) => {
     if (!currentSongQuestion) return;
@@ -531,16 +452,16 @@ export function useBeachMatch() {
     setShowSongQuiz(false);
     setCurrentSongQuestion(null);
     setSongQuizTimer(30);
-  }, [currentSongQuestion]);
+  }, [currentSongQuestion, setGameState, setShowSongQuiz, setCurrentSongQuestion, setSongQuizTimer]);
 
   const handleSponsorClick = useCallback((type: 'ad' | 'video' | 'link') => {
     setGameState(prev => EngagementTracker.handleSponsorClick(prev, type));
-  }, []);
+  }, [setGameState]);
 
   const triggerBoardFlash = useCallback(() => {
     setBoardFlash(true);
     setTimeout(() => setBoardFlash(false), 4000); // 4 seconds for a more professional flash
-  }, []);
+  }, [setBoardFlash]);
 
   const resetGame = useCallback(() => {
     setGameState(prev => ({
@@ -573,22 +494,22 @@ export function useBeachMatch() {
     if (lifeTimerRef.current) {
       clearInterval(lifeTimerRef.current);
     }
-  }, []);
+  }, [setGameState, setShowSongQuiz, setCurrentSongQuestion, setSongQuizTimer, setIsProcessing, setHasMadeFirstMove, setGameOverCountdown]);
 
   const pauseGame = useCallback(() => {
     setGameState(prev => ({
       ...prev,
       isPaused: !prev.isPaused
     }));
-  }, []);
+  }, [setGameState]);
 
   const showLeaderboardModal = useCallback(() => {
     setShowLeaderboard(true);
-  }, []);
+  }, [setShowLeaderboard]);
 
   const hideLeaderboardModal = useCallback(() => {
     setShowLeaderboard(false);
-  }, []);
+  }, [setShowLeaderboard]);
 
   const handleLeaderboardNameSubmit = useCallback((name: string, score: number) => {
     console.log(`Player ${name} submitted score: ${score}`);
@@ -598,6 +519,86 @@ export function useBeachMatch() {
   const activeEvents = EventManager.getActiveEvents();
   const dailyChallenge = EngagementTracker.getDailyChallenge();
   const engagementData = EngagementTracker.getEngagementData();
+
+  // --- Now use them in handlePieceClick ---
+  const handlePieceClick = useCallback((row: number, col: number) => {
+    console.log('[handlePieceClick] called. isProcessing:', isProcessing, 'hasMadeFirstMove:', hasMadeFirstMove);
+    if (isProcessing) return;
+
+    // Set hasMadeFirstMove on first valid click
+    if (!hasMadeFirstMove) {
+      setHasMadeFirstMove(true);
+      console.log('First move made!');
+    }
+    console.log('Piece clicked:', row, col);
+
+    // Reset activity timer and hide any visible hints
+    setGameState(prevState => ({
+      ...prevState,
+      noActivityStart: Date.now(),
+      hintState: {
+        ...prevState.hintState,
+        isVisible: false
+      }
+    }));
+
+    setGameState(prevState => {
+      if (prevState.isGameOver || prevState.isPaused) return prevState;
+
+      const clickedPiece = prevState.grid[row][col];
+      if (!clickedPiece) return prevState;
+
+      // If piece has power-up, activate it
+      if (clickedPiece.isSpecial && clickedPiece.powerUp) {
+        // Handle power-up activation separately
+        setTimeout(() => activatePowerUp(clickedPiece.powerUp!, row, col), 0);
+        return prevState;
+      }
+
+      // Handle piece selection for swapping
+      if (!prevState.selectedPiece) {
+        AudioManager.playSwapSound();
+        return {
+          ...prevState,
+          selectedPiece: { row, col }
+        };
+      } else {
+        const { row: selectedRow, col: selectedCol } = prevState.selectedPiece;
+
+        // If clicking the same piece, deselect
+        if (selectedRow === row && selectedCol === col) {
+          return {
+            ...prevState,
+            selectedPiece: null
+          };
+        }
+
+        // Check if swap is valid
+        if (BeachMatchEngine.canSwapPieces(prevState.grid, selectedRow, selectedCol, row, col)) {
+          setIsProcessing(true);
+          setSwappingPieces([{row: selectedRow, col: selectedCol}, {row, col}]);
+          setTimeout(() => setSwappingPieces([]), 180);
+          // Perform the swap
+          const newGrid = BeachMatchEngine.swapPieces(prevState.grid, selectedRow, selectedCol, row, col);
+          // Process matches after swap
+          setTimeout(() => {
+            processMatches(newGrid);
+          }, 100);
+          return {
+            ...prevState,
+            grid: newGrid,
+            selectedPiece: null
+          };
+        } else {
+          // Invalid swap - deselect
+          return {
+            ...prevState,
+            selectedPiece: null
+          };
+        }
+      }
+    });
+  }, [isProcessing, hasMadeFirstMove, setIsProcessing, setSwappingPieces, setGameState, setBoardFlash, setGameOverCountdown, setHasMadeFirstMove, activatePowerUp, processMatches]);
 
   return {
     gameState,

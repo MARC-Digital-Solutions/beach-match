@@ -45,7 +45,7 @@ export class AudioManager {
       title: 'WSBH Station Promo',
       artist: '98.5 The Beach',
       lyricHint: 'Smooth radio announcement with station branding',
-      options: ['Space Coast\'s Hit Music', 'Melbourne\'s #1 Music', 'Florida\'s Beach Station', 'Your Music, Your Station'],
+      options: ["Space Coast&apos;s Hit Music", "Melbourne&apos;s #1 Music", "Florida&apos;s Beach Station", "Your Music, Your Station"],
       correctAnswer: 0,
       type: 'song'
     },
@@ -403,7 +403,7 @@ export class AudioManager {
       console.error('Could not fetch song metadata:', error);
       return {
         title: '98.5 The Beach Live',
-        artist: 'Space Coast\'s Greatest Hits'
+        artist: 'Space Coast&apos;s Greatest Hits'
       };
     }
   }
