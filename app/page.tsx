@@ -1,4 +1,5 @@
 'use client';
+// Force Vercel deployment - latest commit fb4e15e
 // Force deployment - ensure all apostrophes are properly escaped
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
