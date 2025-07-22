@@ -138,7 +138,7 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                             ? 'bg-white/90 border-white/50 hover:bg-white hover:border-white shadow-md' 
                             : 'bg-transparent border-transparent'
                         }
-                        ${isHinted ? 'scale-125 z-30 ring-4 ring-yellow-300 animate-hint-glow animate-bounce' : ''}
+                        ${isHinted ? 'ring-4 ring-yellow-300 animate-hint-glow' : ''}
                         ${isProcessing ? 'pointer-events-none opacity-70' : ''}
                         ${isSwapping ? 'piece-swap animate-bounce' : ''}
                       `}
@@ -146,14 +146,14 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                       disabled={!piece || isProcessing}
                     >
                       {piece && (
-                        <span className={`drop-shadow-sm ${isHinted ? 'text-7xl text-yellow-400' : ''}`}>
+                        <span className="drop-shadow-sm">
                           {getPieceIcon(piece.type)}
                         </span>
                       )}
-                      {/* Extra prominent hint indicator */}
+                      {/* Hint star overlay - no scaling, just a flashing star */}
                       {isHinted && hintState?.isVisible && (
                         <span className="absolute inset-0 flex items-center justify-center pointer-events-none z-40">
-                          <span className="text-yellow-300 text-3xl animate-hint-star-glow animate-bounce drop-shadow-md">⭐️</span>
+                          <span className="text-yellow-300 text-2xl animate-hint-star-glow animate-pulse drop-shadow-md">⭐️</span>
                         </span>
                       )}
                     </button>

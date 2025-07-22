@@ -148,7 +148,7 @@ button:focus-visible {
   50% { border-color: #fffbe6; box-shadow: 0 0 0 16px #ffe066, 0 0 64px 32px #ffe066; }
   100% { border-color: #ffe066; box-shadow: 0 0 0 8px #ffe066, 0 0 32px 16px #fffbe6; }
 }
-.animate-board-flash { animation: board-flash 4s cubic-bezier(0.4,0,0.2,1); }
+.animate-board-flash { animation: board-flash 6s cubic-bezier(0.4,0,0.2,1); }
 
 @keyframes hint-glow {
   0%, 100% { box-shadow: 0 0 0 0 #ffe066; }

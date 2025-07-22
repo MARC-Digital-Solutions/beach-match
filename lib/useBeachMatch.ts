@@ -125,7 +125,7 @@ export function useBeachMatch() {
       return;
     }
     if (!gameStateRef.current.isGameOver && !gameStateRef.current.isPaused && gameStateRef.current.noActivityStart) {
-      const delay = 2000; // 2 seconds for all hints
+      const delay = 3000; // 3 seconds for hints (increased from 2)
       const showHint = () => {
         const possibleMatch = BeachMatchEngine.findPossibleMatch(gameStateRef.current.grid);
         console.log('[HintTimer] showHint called. possibleMatch:', possibleMatch);
@@ -153,7 +153,7 @@ export function useBeachMatch() {
             if (!gameStateRef.current.isGameOver && !gameStateRef.current.isPaused && hasMadeFirstMoveRef.current && !boardFlash) {
               hintTimerRef.current = setTimeout(showHint, delay);
             }
-          }, 1200);
+          }, 1500); // Increased hint display time to 1.5 seconds
         } else {
           console.log('[HintTimer] No possible match found for hint.');
         }
@@ -460,7 +460,7 @@ export function useBeachMatch() {
 
   const triggerBoardFlash = useCallback(() => {
     setBoardFlash(true);
-    setTimeout(() => setBoardFlash(false), 4000); // 4 seconds for a more professional flash
+    setTimeout(() => setBoardFlash(false), 6000); // 6 seconds for a more prominent flash
   }, [setBoardFlash]);
 
   const resetGame = useCallback(() => {
@@ -541,6 +541,12 @@ export function useBeachMatch() {
         isVisible: false
       }
     }));
+
+    // Clear any existing hint timer to prevent interference
+    if (hintTimerRef.current) {
+      clearTimeout(hintTimerRef.current);
+      hintTimerRef.current = null;
+    }
 
     // Handle piece selection and swapping
     if (swappingPieces.length === 0) {
