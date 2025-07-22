@@ -166,7 +166,7 @@ export const GameTutorial: React.FC<GameTutorialProps> = ({
                 Ready to Play!
               </div>
               <div className="text-gray-700 mb-6">
-                Now you know how to match beach items and earn bonuses. Let's start your beach adventure!
+                Now you know how to match beach items and earn bonuses. Let&apos;s start your beach adventure!
               </div>
               
               <button

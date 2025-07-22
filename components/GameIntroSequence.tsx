@@ -104,7 +104,7 @@ export const GameIntroSequence: React.FC<GameIntroSequenceProps> = ({
           </div>
         </div>
         <div className="text-cyan-300 text-xl font-medium">
-          🌴 The Space Coast's #1 Hit Music Station 🌴
+          🌴 The Space Coast&apos;s #1 Hit Music Station 🌴
         </div>
       </div>
     </div>
