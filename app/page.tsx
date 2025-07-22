@@ -1,5 +1,5 @@
 'use client';
-
+// Force deployment - ensure all apostrophes are properly escaped
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { SongQuizModal } from '@/components/SongQuizModal';
