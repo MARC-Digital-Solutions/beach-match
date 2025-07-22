@@ -312,16 +312,16 @@ export class AudioManager {
     return this.FLORIDA_BEACH_QUESTIONS[randomIndex];
   }
 
-  static getQuestionByType(type: 'song' | 'space_coast' | 'florida_beach'): QuizQuestion {
+  static async getQuestionByType(type: 'song' | 'space_coast' | 'florida_beach'): Promise<QuizQuestion> {
     switch (type) {
       case 'song':
-        return this.getRandomSongQuestion();
+        return await this.getRandomSongQuestion();
       case 'space_coast':
         return this.getRandomSpaceCoastQuestion();
       case 'florida_beach':
         return this.getRandomFloridaBeachQuestion();
       default:
-        return this.getRandomSongQuestion();
+        return await this.getRandomSongQuestion();
     }
   }
 

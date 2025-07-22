@@ -276,7 +276,7 @@ export function useBeachMatch() {
     if (quizType === 'song') {
       question = await AudioManager.getRandomSongQuestion();
     } else {
-      question = AudioManager.getQuestionByType(quizType);
+      question = await AudioManager.getQuestionByType(quizType);
     }
     setCurrentSongQuestion(question);
     setShowSongQuiz(true);

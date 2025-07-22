@@ -357,8 +357,8 @@ export default function HomePage() {
         
         {/* Bottom Brand Strip */}
         <div className="bg-gradient-to-r from-red-600 to-red-700 text-white text-center py-1 text-xs font-bold">
-            🌊 SPACE COAST&apos;S GREATEST HITS • LIVE FROM MELBOURNE, FLORIDA 🌊
-          </div>
+          🌊 SPACE COAST&apos;S GREATEST HITS • LIVE FROM MELBOURNE, FLORIDA 🌊
+        </div>
       </div>
 
       {/* Main Game Area */}
