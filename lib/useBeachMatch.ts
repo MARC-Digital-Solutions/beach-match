@@ -206,7 +206,7 @@ export function useBeachMatch() {
             if (newLives <= 0) {
               // Start countdown instead of immediate game over
               setGameOverCountdown(60);
-              // Don't set isGameOver yet
+              // Don&apos;t set isGameOver yet
               return {
                 ...prevState,
                 lives: 0

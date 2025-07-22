@@ -260,7 +260,7 @@ export class AudioManager {
         this.currentAudio.load();
       } catch (error) {
         console.error('Failed to play game start clip:', error);
-        resolve(); // Don't block game if audio fails
+        resolve(); // Don&apos;t block game if audio fails
       }
     });
   }
@@ -297,7 +297,7 @@ export class AudioManager {
         this.currentAudio.load();
       } catch (error) {
         console.error('Failed to play game complete clip:', error);
-        resolve(); // Don't block game if audio fails
+        resolve(); // Don&apos;t block game if audio fails
       }
     });
   }
