@@ -1,0 +1,286 @@
+---
+alwaysApply: true
+---
+**Always refer to this document for implementation decisions. Update this rules document when core mechanics change and communicate updates to the development team.**# 🎯 Beach Match – Developer Rules & Functional Spec
+
+## 1. Game Overview
+
+- **Beach Match** is a Next.js/React app featuring an 8x8 match-3 grid with beach-themed pieces.
+- The game is designed to drive engagement, ad impressions, and stream time for 98.5 The Beach radio station.
+- Players earn points, lives, and bonuses through gameplay, streaming, sponsor engagement, and trivia mini-games.
+- Community leaderboard with opt-in prize eligibility for competitive play.
+
+---
+
+## 2. Core Game Mechanics
+
+- **Grid:** 8x8, 5 piece types (Standing Umbrella, Microphone, Rocket Ship, Palm Tree, Boat).
+- **Match-3:** Swap adjacent pieces to create lines of 3+.
+- **Hint System:** If no moves are made for 3 seconds, pieces glow/flash as hints.
+- **No Valid Moves:** If no valid moves remain, the board shuffles and repopulates to match timed events.
+- **Piece Animations:** 
+  - Matched pieces fade out with particle effects.
+  - Hints glow/pulse/flash after 3-second inactivity.
+  - Shuffle triggers board shake animation before repopulation.
+
+---
+
+## 3. Special Game Mode - Wave Mode
+
+- **Wave Mode Activation:** Special timed event or power-up trigger.
+- **Mechanic:** Replaces all Boat pieces and "crashes" new themed icons onto the board.
+- **Visual Effect:** Ocean wave animation sweeps across board during transformation.
+- **Duration:** Temporary mode with enhanced scoring multipliers.
+
+---
+
+## 4. Engagement Integration
+
+- **Streaming Bonuses:** +1 life and +100 points every 5 minutes of streaming.
+- **Sponsor Rewards:** 
+  - Click ad: +50 points, +1 life.
+  - Watch video: +100 points, +2 lives.
+  - Visit link: +75 points, +1 life.
+- **Stream Integration:** Critical feature with XML "Now Playing" ticker display.
+- **Community Leaderboard:** Players can opt-in for prize eligibility and competitive rankings.
+
+---
+
+## 5. Trivia Mini-Game System
+
+### Activation Rules:
+- **Prerequisite:** At least one match of each piece type must be cleared before ANY trivia can trigger.
+- **Cooldown:** Each trivia type can only occur once every 2 minutes maximum.
+- **Reward:** Correct answers award bonus lives (and points).
+
+### Three Trivia Categories:
+
+#### 5.1 Music Trivia (Microphone Triggers)
+- **Data Source:** Public SongIQ API for real-world classic hits questions (text-based).
+- **Content:** Questions about songs, artists, albums, music history.
+- **Format:** Text-only questions with multiple choice answers.
+- **No Audio:** Does not include song clips or audio playback.
+- **Trigger:** Clearing Microphone pieces (after initial match requirement met).
+
+#### 5.2 Florida/Environmental Trivia (Palm Tree & Standing Umbrella Triggers)
+- **Content:** Brevard County, Space Coast, Florida environment questions.
+- **Topics:** Alligators, rivers, lakes, local geography, Florida wildlife.
+- **Trigger:** Clearing Palm Tree or Standing Umbrella pieces.
+
+#### 5.3 Space/NASA Trivia (Rocket Triggers)
+- **Content:** NASA, Cape Canaveral, Space Coast, SpaceX questions.
+- **Topics:** Space program history, recent launches, Florida space industry.
+- **Trigger:** Clearing Rocket Ship pieces.
+
+---
+
+## 6. Game Intro Sequence
+
+- **Beach Logo:** Prominent 98.5 The Beach branding.
+- **Sponsor Spot:** Integrated sponsor advertisement display with countdown.
+- **Audio:** Plays station jingle WAV file once per intro.
+- **Audio Management:** Ensure single playback, no duplicates, clean up on unmount.
+- **Visual Flow:** Countdown → Sponsor logo → Game board reveal.
+
+---
+
+## 7. Power-Ups & Special Pieces
+
+- **Standard Power-Ups:** 
+  - Line Clear: Remove entire row/column
+  - Color Bomb: Remove all pieces of selected color
+  - Lightning: Clear 3x3 area around selected piece
+- **Engagement-Based Power-Ups:** 
+  - 🎵 Music Note (from trivia): clears adjacent pieces with chain reaction
+  - 📻 Radio Wave (from streaming): creates expanding wave effect
+  - 🏖️ Beach Bomb (from sponsor): mega-clear with particle explosion
+  - ☂️ Umbrella Shield: Temporary protection from bad moves
+- **Special Piece Creation:** Matching 4+ pieces creates power-ups automatically
+- **Streak Bonuses:** Consecutive correct trivia answers unlock exclusive power-ups
+
+---
+
+## 8. Progression & Persistence
+
+- **Lives System:** 
+  - Start with 3 lives, maximum of 5
+  - Lose one when no moves available
+  - Regenerate: 1 every 30 minutes OR via engagement actions
+- **Scoring:** 
+  - Base matches: 50 points per piece
+  - Power-up matches: Multiplied scoring
+  - Streak bonuses for consecutive matches
+- **High Scores:** Community leaderboard with opt-in prize system
+- **Daily/Weekly Challenges:** 
+  - "Stream for 15 minutes": Unlock exclusive piece skin
+  - "Make 50 matches": Bonus life package  
+  - "Complete 3 trivia games": Power-up starter pack
+  - Seasonal events with themed rewards
+
+---
+
+## 9. Timed Events (Bejeweled-Style)
+
+- **Event Types:** Rocket Launch, Hurricane Watch, Sunny Day, Weekend Beach Party, Happy Hour, Late Night.
+- **Board Effects:** When shuffling/repopulating, board matches current timed event theme.
+- **Event Bonuses:** Themed power-ups, score multipliers, special piece distributions.
+- **Visual Changes:** Background, piece highlights, particle effects match event theme.
+
+---
+
+## 10. UI/UX Requirements
+
+- **Mobile-first** 8x8 grid with smooth swap animations.
+- **HUD Elements:** 
+  - Score (top left with animated counters)
+  - Lives (top right with heart icons, max 5)
+  - Stream timer (bottom with progress indicator)
+  - Now Playing XML ticker (prominent, scrolling)
+  - Sponsor banner (non-intrusive, clickable with tracking)
+  - Community leaderboard toggle button
+  - Rules/directions section (directly below board, above sponsors)
+- **Footer:** Always include link to https://beach985.com/ and social icons.
+- **Animations:** 
+  - 3-second hint system with glow/flash effects
+  - Smooth piece swaps and match clearing
+  - Board shake before shuffle/repopulation
+
+---
+
+## 11. Code & Architecture
+
+- **Key Files:**
+  - `gameEngine.ts`: Match detection, 8x8 grid management, shuffle logic.
+  - `audioManager.ts`: Trivia audio, streaming integration, jingle playback.
+  - `engagementTracker.ts`: Stream timer, sponsor clicks, bonus logic.
+  - `powerUpSystem.ts`: Special piece effects including wave mode.
+  - `eventManager.ts`: Timed events, board theming.
+  - `triviaSystem.ts`: Three-category trivia logic with cooldowns.
+  - `leaderboardManager.ts`: Community rankings and prize system.
+  - `useBeachMatch.ts`: Main game state and logic.
+
+- **Component Structure:**
+  - `BeachMatchGame.tsx`: 8x8 board rendering, animations, hint system.
+  - `GameIntroSequence.tsx`: Logo, sponsor, jingle audio (once only).
+  - `TriviaModal.tsx`: Three-category trivia system.
+  - `LeaderboardPanel.tsx`: Community rankings display.
+  - `StreamTracker.tsx`: XML now playing integration.
+
+---
+
+## 12. Audio & Media Management
+
+- **Intro Jingle:** 
+  - Play station jingle WAV once per intro sequence.
+  - Use refs to prevent duplicate playback.
+  - Clean up on unmount.
+- **Trivia Audio:** 
+  - Music trivia includes song clips from SongIQ.
+  - Other categories use sound effects only.
+
+---
+
+## 13. Trivia Logic Requirements
+
+- **Activation Gate:** Track first match of each piece type before enabling trivia.
+- **Cooldown System:** 2-minute minimum between same-category trivia.
+- **Data Sources:**
+  - Music: SongIQ API with local fallbacks
+  - Florida: Curated local knowledge base
+  - Space: NASA/SpaceX fact database
+- **Rewards:** Bonus lives for correct answers, leaderboard points.
+
+---
+
+## 14. Community Features
+
+- **Leaderboard:** 
+  - Opt-in system for prize eligibility
+  - Weekly/monthly prize cycles
+  - Player rankings by score and engagement
+- **Social Integration:** Share achievements to station social media.
+
+---
+
+## 15. Error Handling & Fallbacks
+
+- **Trivia APIs:** Local question banks for all categories when APIs fail.
+- **Stream Integration:** Graceful degradation when XML feed unavailable.
+- **No Valid Moves:** Always shuffle and repopulate, never reset to empty.
+- **Audio Issues:** Silent fallback if jingle/audio fails to load.
+
+---
+
+## 16. Technical Implementation Notes
+
+- **Framework:** Next.js/React with Tailwind CSS.
+- **State Management:** React hooks with persistent storage.
+- **8x8 Grid:** Responsive design maintaining square aspect ratio.
+- **Performance:** Optimize for mobile with smooth 60fps animations.
+- **Accessibility:** Keyboard navigation support, screen reader compatibility.
+
+---
+
+## 17. Success Metrics & Engagement Loop
+
+### Engagement Loop:
+1. Player makes matches → earns points
+2. Trivia games trigger → bonus rewards and learning
+3. Sponsor content appears → extra lives/points for interaction  
+4. Streaming time accumulates → automatic bonuses
+5. Special events activate → themed power-ups and multipliers
+
+### Retention Hooks:
+- Lives system encourages return visits
+- Daily challenges create playing habits  
+- Music/local knowledge discovery through trivia
+- Social sharing of high scores and achievements
+- Community competition via leaderboard
+
+### Success Metrics:
+- Average stream time per session
+- Sponsor engagement rates
+- Trivia completion rates by category
+- Community leaderboard participation
+- Prize redemption rates
+- Lives earned vs. purchased ratio
+- Daily/weekly active players
+- Social sharing frequency
+
+## 18. Admin Dashboard Features (Future Development)
+
+- **Game Management:**
+  - Upload song clips for music trivia
+  - Schedule special events and timed activations
+  - Adjust difficulty curves and power-up spawn rates
+  - Monitor real-time engagement metrics
+
+- **Content Control:**
+  - Sponsor content rotation and scheduling
+  - Custom piece artwork for seasonal events
+  - Prize pool management and redemption tracking
+  - Player progress analytics and insights
+
+- **Community Management:**
+  - Leaderboard moderation and prize distribution
+  - User account management and verification
+  - Social media integration controls
+  - Performance analytics dashboard
+
+---
+
+## 19. Technical Implementation Details
+
+- **Framework:** Next.js/React with TypeScript
+- **Styling:** Tailwind CSS for responsive design
+- **State Management:** React hooks with Context API
+- **Audio:** Web Audio API for jingles and trivia clips
+- **Data Storage:** 
+  - MVP: localStorage for scores/progress
+  - Scale: Firebase for user accounts, leaderboards
+  - Real-time: Stream status, current song, live events
+- **APIs:** 
+  - SongIQ for music trivia
+  - Local databases for Florida/Space trivia
+  - XML feed integration for now playing
+- **Performance:** Optimized for 60fps animations on mobile devices

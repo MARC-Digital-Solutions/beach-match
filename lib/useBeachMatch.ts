@@ -1,0 +1,629 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { BeachMatchState, QuizQuestion, GamePiece } from './types';
+import { BeachMatchEngine } from './gameEngine';
+import { AudioManager } from './audioManager';
+import { EngagementTracker } from './engagementTracker';
+import { PowerUpSystem } from './powerUpSystem';
+import { EventManager } from './eventManager';
+
+export function useBeachMatch() {
+  const [gameState, setGameState] = useState<BeachMatchState>({
+    score: 0,
+    lives: 3,
+    grid: [], // Start with empty grid to avoid hydration mismatch
+    selectedPiece: null,
+    streamTime: 0,
+    currentStreamStart: null,
+    matches: [],
+    powerUps: [],
+    level: 1,
+    combo: 0,
+    isGameOver: false,
+    isPaused: false,
+    lastLifeGained: 0,
+    lastScoreBonus: 0,
+    songStreak: 0,
+    totalMatches: 0,
+    hintState: {
+      isVisible: false,
+      piece1: null,
+      piece2: null,
+      lastHintTime: 0
+    },
+    lastMatchedPiece: null,
+    noActivityStart: null
+  });
+
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showSongQuiz, setShowSongQuiz] = useState(false);
+  const [currentSongQuestion, setCurrentSongQuestion] = useState<QuizQuestion | null>(null);
+  const [songQuizTimer, setSongQuizTimer] = useState(30);
+  const [showWaveCrash, setShowWaveCrash] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
+  const hintTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lifeTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isShuffling, setIsShuffling] = useState(false);
+  const [gameOverCountdown, setGameOverCountdown] = useState<number | null>(null);
+  const [boardFlash, setBoardFlash] = useState(false);
+  const [matchedRows, setMatchedRows] = useState<number[]>([]);
+  const [matchedCols, setMatchedCols] = useState<number[]>([]);
+  const [swappingPieces, setSwappingPieces] = useState<{row:number,col:number}[]>([]);
+  // Board flash: Only trigger once on entry
+  const [boardHasFlashed, setBoardHasFlashed] = useState(false);
+  // Track if the user has made their first move
+  const [hasMadeFirstMove, setHasMadeFirstMove] = useState(false);
+
+  const gameStateRef = useRef(gameState);
+  const hasMadeFirstMoveRef = useRef(hasMadeFirstMove);
+  useEffect(() => { gameStateRef.current = gameState; }, [gameState]);
+  useEffect(() => { hasMadeFirstMoveRef.current = hasMadeFirstMove; }, [hasMadeFirstMove]);
+
+  // Initialize game systems and create initial grid on client only
+  useEffect(() => {
+    // Initialize the grid only on the client to avoid hydration mismatch
+    setGameState(prevState => ({
+      ...prevState,
+      grid: BeachMatchEngine.createInitialGrid(),
+      noActivityStart: Date.now() // Start tracking inactivity immediately
+    }));
+
+    EngagementTracker.loadEngagementData();
+    EventManager.initializeEvents();
+    
+    return () => {
+      EventManager.cleanup();
+      if (gameLoopRef.current) {
+        clearInterval(gameLoopRef.current);
+      }
+      if (hintTimerRef.current) {
+        clearTimeout(hintTimerRef.current);
+      }
+      if (lifeTimerRef.current) {
+        clearInterval(lifeTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Reset lastHintTime on game start and after any user action
+  useEffect(() => {
+    setGameState(prev => ({
+      ...prev,
+      hintState: {
+        ...prev.hintState,
+        lastHintTime: 0
+      }
+    }));
+  }, [gameState.noActivityStart]);
+
+  // Only reset hasMadeFirstMove when the board is re-initialized (when grid is empty)
+  useEffect(() => {
+    if (gameState.grid.length === 0) {
+      setHasMadeFirstMove(false);
+    }
+  }, [gameState.grid]);
+
+  // Board flash: Only trigger on initial game load and on reset
+  // REMOVE this effect:
+  // useEffect(() => {
+  //   setBoardFlash(true);
+  //   const timer = setTimeout(() => {
+  //     setBoardFlash(false);
+  //   }, 1200); // 1.2s entry flash
+  //   return () => clearTimeout(timer);
+  // }, []);
+
+  // Hint system timer
+  useEffect(() => {
+    if (hintTimerRef.current) {
+      clearTimeout(hintTimerRef.current);
+    }
+    console.log('[HintTimer] Effect run. hasMadeFirstMove:', hasMadeFirstMoveRef.current, 'boardFlash:', boardFlash, 'isGameOver:', gameStateRef.current.isGameOver, 'isPaused:', gameStateRef.current.isPaused);
+    // Only show hints after the first move AND after the entry board flash is done
+    if (!hasMadeFirstMoveRef.current || boardFlash) {
+      console.log('[HintTimer] Skipping: hasMadeFirstMove or boardFlash');
+      return;
+    }
+    if (!gameStateRef.current.isGameOver && !gameStateRef.current.isPaused && gameStateRef.current.noActivityStart) {
+      const delay = 2000; // 2 seconds for all hints
+      const showHint = () => {
+        const possibleMatch = BeachMatchEngine.findPossibleMatch(gameStateRef.current.grid);
+        console.log('[HintTimer] showHint called. possibleMatch:', possibleMatch);
+        if (possibleMatch) {
+          console.log('Hint shown');
+          setGameState(prev => ({
+            ...prev,
+            hintState: {
+              isVisible: true,
+              piece1: possibleMatch.piece1,
+              piece2: possibleMatch.piece2,
+              lastHintTime: Date.now()
+            }
+          }));
+          setTimeout(() => {
+            console.log('Hint hidden');
+            setGameState(prev => ({
+              ...prev,
+              hintState: {
+                ...prev.hintState,
+                isVisible: false
+              }
+            }));
+            // Schedule next hint if still inactive
+            if (!gameStateRef.current.isGameOver && !gameStateRef.current.isPaused && hasMadeFirstMoveRef.current && !boardFlash) {
+              hintTimerRef.current = setTimeout(showHint, delay);
+            }
+          }, 1200);
+        } else {
+          console.log('[HintTimer] No possible match found for hint.');
+        }
+      };
+      console.log('[HintTimer] Setting initial timer for', delay, 'ms');
+      hintTimerRef.current = setTimeout(showHint, delay);
+    }
+    return () => {
+      if (hintTimerRef.current) {
+        clearTimeout(hintTimerRef.current);
+      }
+    };
+  }, [gameState.noActivityStart, gameState.isGameOver, gameState.isPaused, hasMadeFirstMove, boardFlash]);
+
+  // Start game loop for engagement tracking
+  useEffect(() => {
+    if (gameLoopRef.current) {
+      clearInterval(gameLoopRef.current);
+    }
+
+    gameLoopRef.current = setInterval(() => {
+      setGameState(prevState => {
+        if (!prevState.isGameOver && !prevState.isPaused) {
+          return EngagementTracker.updateStreamTime(prevState);
+        }
+        return prevState;
+      });
+    }, 1000); // Update every second
+
+    return () => {
+      if (gameLoopRef.current) {
+        clearInterval(gameLoopRef.current);
+      }
+    };
+  }, [gameState.isGameOver, gameState.isPaused]);
+
+  // Life timer - reduces lives every 5 minutes of active gameplay
+  useEffect(() => {
+    if (lifeTimerRef.current) {
+      clearInterval(lifeTimerRef.current);
+    }
+
+    if (!gameState.isGameOver && !gameState.isPaused) {
+      lifeTimerRef.current = setInterval(() => {
+        setGameState(prevState => {
+          if (prevState.isGameOver || prevState.isPaused) return prevState;
+          const isActivelyStreaming = AudioManager.isStreaming();
+          if (!isActivelyStreaming && prevState.lives > 0) {
+            const newLives = prevState.lives - 1;
+            if (newLives <= 0) {
+              // Start countdown instead of immediate game over
+              setGameOverCountdown(60);
+              // Don't set isGameOver yet
+              return {
+                ...prevState,
+                lives: 0
+              };
+            }
+            return {
+              ...prevState,
+              lives: newLives
+            };
+          }
+          return prevState;
+        });
+      }, 5 * 60 * 1000); // 5 minutes
+    }
+
+    return () => {
+      if (lifeTimerRef.current) {
+        clearInterval(lifeTimerRef.current);
+      }
+    };
+  }, [gameState.isGameOver, gameState.isPaused]);
+
+  // Always-on countdown timer for lives
+  useEffect(() => {
+    if (gameOverCountdown === null) {
+      setGameOverCountdown(60);
+      setBoardHasFlashed(false); // trigger board flash
+      setBoardFlash(false);
+      return;
+    }
+    if (gameOverCountdown <= 0) {
+      // Remove a life and reset countdown
+      setGameState(prev => {
+        const newLives = Math.max(0, prev.lives - 1);
+        return {
+          ...prev,
+          lives: newLives,
+          isGameOver: newLives === 0
+        };
+      });
+      setGameOverCountdown(60);
+      setBoardHasFlashed(false); // trigger board flash
+      setBoardFlash(false);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setGameOverCountdown(c => (c !== null ? c - 1 : null));
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [gameOverCountdown]);
+
+  // When player earns a life, reset countdown to 60 and flash board
+  useEffect(() => {
+    if (gameState.lives > 0 && gameOverCountdown !== 60) {
+      setGameOverCountdown(60);
+      setBoardHasFlashed(false);
+      setBoardFlash(false);
+    }
+  }, [gameState.lives]);
+
+  // Handle piece selection and swapping
+  const handlePieceClick = useCallback((row: number, col: number) => {
+    console.log('[handlePieceClick] called. isProcessing:', isProcessing, 'hasMadeFirstMove:', hasMadeFirstMove);
+    if (isProcessing) return;
+
+    // Set hasMadeFirstMove on first valid click
+    if (!hasMadeFirstMove) {
+      setHasMadeFirstMove(true);
+      console.log('First move made!');
+    }
+    console.log('Piece clicked:', row, col);
+
+    // Reset activity timer and hide any visible hints
+    setGameState(prevState => ({
+      ...prevState,
+      noActivityStart: Date.now(),
+      hintState: {
+        ...prevState.hintState,
+        isVisible: false
+      }
+    }));
+
+    setGameState(prevState => {
+      if (prevState.isGameOver || prevState.isPaused) return prevState;
+
+      const clickedPiece = prevState.grid[row][col];
+      if (!clickedPiece) return prevState;
+
+      // If piece has power-up, activate it
+      if (clickedPiece.isSpecial && clickedPiece.powerUp) {
+        // Handle power-up activation separately
+        setTimeout(() => activatePowerUp(clickedPiece.powerUp!, row, col), 0);
+        return prevState;
+      }
+
+      // Handle piece selection for swapping
+      if (!prevState.selectedPiece) {
+        AudioManager.playSwapSound();
+        return {
+          ...prevState,
+          selectedPiece: { row, col }
+        };
+      } else {
+        const { row: selectedRow, col: selectedCol } = prevState.selectedPiece;
+
+        // If clicking the same piece, deselect
+        if (selectedRow === row && selectedCol === col) {
+          return {
+            ...prevState,
+            selectedPiece: null
+          };
+        }
+
+        // Check if swap is valid
+        if (BeachMatchEngine.canSwapPieces(prevState.grid, selectedRow, selectedCol, row, col)) {
+          setIsProcessing(true);
+          setSwappingPieces([{row: selectedRow, col: selectedCol}, {row, col}]);
+          setTimeout(() => setSwappingPieces([]), 180);
+          // Perform the swap
+          const newGrid = BeachMatchEngine.swapPieces(prevState.grid, selectedRow, selectedCol, row, col);
+          // Process matches after swap
+          setTimeout(() => {
+            processMatches(newGrid);
+          }, 100);
+          return {
+            ...prevState,
+            grid: newGrid,
+            selectedPiece: null
+          };
+        } else {
+          // Invalid swap - deselect
+          return {
+            ...prevState,
+            selectedPiece: null
+          };
+        }
+      }
+    });
+  }, [isProcessing, hasMadeFirstMove]);
+
+  const processMatches = useCallback(async (grid: (GamePiece | null)[][]) => {
+    let currentGrid = [...grid.map(row => [...row])];
+    let totalScore = 0;
+    let comboCount = 0;
+    let hasMatches = true;
+    let matchedPieceTypes: Set<string> = new Set();
+
+    console.log('Processing matches...');
+
+    while (hasMatches) {
+      const matches = BeachMatchEngine.findMatches(currentGrid);
+      
+      if (matches.length === 0) {
+        hasMatches = false;
+        break;
+      }
+
+      // Trigger board flash for any 4- or 5-piece match
+      const hasBigMatch = matches.some(match => match.pieces.length === 4 || match.pieces.length === 5);
+      if (hasBigMatch) {
+        setBoardFlash(true);
+        setTimeout(() => setBoardFlash(false), 1000); // 1s flash
+      }
+
+      console.log(`Found ${matches.length} matches`);
+      comboCount++;
+      // AudioManager.playMatchSound(); // No sound
+
+      // Track matched piece types for trivia triggering
+      matches.forEach(match => {
+        match.pieces.forEach(piece => {
+          matchedPieceTypes.add(piece.type);
+        });
+      });
+
+      // Calculate score with multipliers
+      const matchScore = matches.reduce((sum, match) => sum + match.score, 0);
+      const eventMultiplier = EventManager.getScoreMultiplier();
+      const comboMultiplier = 1 + (comboCount - 1) * 0.1;
+      
+      const finalScore = Math.floor(matchScore * eventMultiplier * comboMultiplier);
+      totalScore += finalScore;
+
+      // Remove matched pieces
+      currentGrid = BeachMatchEngine.removeMatches(currentGrid, matches);
+      
+      // Apply gravity
+      currentGrid = BeachMatchEngine.applyGravity(currentGrid);
+
+      // Wait for animation - much faster gameplay
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+
+    console.log(`Processing complete: ${totalScore} points, ${comboCount} combos`);
+
+    // Update game state with match information
+    setGameState(prev => {
+      const newState = {
+        ...prev,
+        grid: currentGrid,
+        score: prev.score + totalScore,
+        combo: comboCount,
+        totalMatches: prev.totalMatches + comboCount,
+        noActivityStart: Date.now() // Reset activity timer
+      };
+
+      // Check for piece-specific trivia triggers
+      const mostCommonPiece = [...matchedPieceTypes][0]; // Get first matched piece type
+      if (mostCommonPiece && BeachMatchEngine.shouldTriggerQuiz(mostCommonPiece as any, newState.totalMatches)) {
+        setTimeout(() => triggerPieceSpecificQuiz(mostCommonPiece as any), 500);
+      }
+
+      // Check for wave crash event
+      if (BeachMatchEngine.shouldTriggerWaveCrash(newState.totalMatches)) {
+        setTimeout(() => triggerWaveCrash(), 1000);
+      }
+
+      // Check for game over or level completion
+      if (!BeachMatchEngine.hasValidMoves(currentGrid)) {
+        // SHUFFLE the board instead of clearing or losing a life
+        setIsShuffling(true);
+        setTimeout(() => {
+          setGameState(prev2 => ({
+            ...prev2,
+            grid: BeachMatchEngine.shuffleGrid(prev2.grid),
+            noActivityStart: Date.now()
+          }));
+          setIsShuffling(false);
+        }, 800);
+        return {
+          ...newState,
+          // Optionally, show a message or animation
+        };
+      } else if (totalScore > 1000) {
+        // Play completion clip for high scoring rounds
+        // AudioManager.playGameCompleteClip().catch(console.error);
+      }
+
+      return newState;
+    });
+
+    setIsProcessing(false);
+  }, []);
+
+  const activatePowerUp = useCallback((powerUpType: any, row: number, col: number) => {
+    setIsProcessing(true);
+    
+    setGameState(prevState => {
+      const result = PowerUpSystem.activatePowerUp(powerUpType, row, col, prevState.grid, prevState);
+      
+      // Apply gravity and process any new matches
+      setTimeout(() => {
+        const gravityGrid = BeachMatchEngine.applyGravity(result.newGrid);
+        processMatches(gravityGrid);
+      }, 300);
+
+      return {
+        ...prevState,
+        grid: result.newGrid,
+        score: prevState.score + result.scoreBonus,
+        noActivityStart: Date.now() // Reset activity timer
+      };
+    });
+  }, [processMatches]);
+
+  const triggerPieceSpecificQuiz = useCallback(async (pieceType: string) => {
+    const quizType = BeachMatchEngine.determineQuizType(pieceType as any);
+    if (!quizType) return;
+
+    let question: QuizQuestion | null = null;
+    if (quizType === 'song') {
+      question = await AudioManager.getRandomSongQuestion();
+    } else {
+      question = AudioManager.getQuestionByType(quizType);
+    }
+    setCurrentSongQuestion(question);
+    setShowSongQuiz(true);
+    setSongQuizTimer(30);
+
+    console.log(`🎯 ${quizType} quiz triggered for ${pieceType}!`);
+
+    // Start countdown timer
+    const timer = setInterval(() => {
+      setSongQuizTimer(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          // Time's up - close modal with no penalty
+          setShowSongQuiz(false);
+          setCurrentSongQuestion(null);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
+  const triggerWaveCrash = useCallback(() => {
+    console.log('🌊 Triggering wave crash!');
+    setShowWaveCrash(true);
+  }, []);
+
+  const handleWaveCrashComplete = useCallback(() => {
+    console.log('🌊 Wave crash complete, reshuffling board');
+    setShowWaveCrash(false);
+    
+    setGameState(prev => ({
+      ...prev,
+      grid: BeachMatchEngine.createWaveCrashedGrid(prev.grid),
+      selectedPiece: null,
+      noActivityStart: Date.now()
+    }));
+  }, []);
+
+  const handleSongQuizAnswer = useCallback((selectedAnswer: number) => {
+    if (!currentSongQuestion) return;
+
+    const isCorrect = selectedAnswer === currentSongQuestion.correctAnswer;
+    
+    setGameState(prev => EngagementTracker.handleSongQuizComplete(prev, isCorrect));
+    
+    AudioManager.stopQuizClip();
+    setShowSongQuiz(false);
+    setCurrentSongQuestion(null);
+    setSongQuizTimer(30);
+  }, [currentSongQuestion]);
+
+  const handleSponsorClick = useCallback((type: 'ad' | 'video' | 'link') => {
+    setGameState(prev => EngagementTracker.handleSponsorClick(prev, type));
+  }, []);
+
+  const triggerBoardFlash = useCallback(() => {
+    setBoardFlash(true);
+    setTimeout(() => setBoardFlash(false), 4000); // 4 seconds for a more professional flash
+  }, []);
+
+  const resetGame = useCallback(() => {
+    setGameState(prev => ({
+      ...prev,
+      score: 0,
+      lives: 3,
+      grid: BeachMatchEngine.createInitialGrid(),
+      selectedPiece: null,
+      matches: [],
+      combo: 0,
+      isGameOver: false,
+      isPaused: false,
+      totalMatches: 0,
+      hintState: {
+        isVisible: false,
+        piece1: null,
+        piece2: null,
+        lastHintTime: 0
+      },
+      lastMatchedPiece: null,
+      noActivityStart: Date.now()
+    }));
+    
+    setShowSongQuiz(false);
+    setCurrentSongQuestion(null);
+    setSongQuizTimer(30);
+    setIsProcessing(false);
+    setHasMadeFirstMove(false);
+    setGameOverCountdown(null);
+    if (lifeTimerRef.current) {
+      clearInterval(lifeTimerRef.current);
+    }
+  }, []);
+
+  const pauseGame = useCallback(() => {
+    setGameState(prev => ({
+      ...prev,
+      isPaused: !prev.isPaused
+    }));
+  }, []);
+
+  const showLeaderboardModal = useCallback(() => {
+    setShowLeaderboard(true);
+  }, []);
+
+  const hideLeaderboardModal = useCallback(() => {
+    setShowLeaderboard(false);
+  }, []);
+
+  const handleLeaderboardNameSubmit = useCallback((name: string, score: number) => {
+    console.log(`Player ${name} submitted score: ${score}`);
+    // Could trigger additional celebration or social sharing here
+  }, []);
+
+  const activeEvents = EventManager.getActiveEvents();
+  const dailyChallenge = EngagementTracker.getDailyChallenge();
+  const engagementData = EngagementTracker.getEngagementData();
+
+  return {
+    gameState,
+    isProcessing,
+    showSongQuiz,
+    currentSongQuestion,
+    songQuizTimer,
+    showWaveCrash,
+    showLeaderboard,
+    handlePieceClick,
+    handleSongQuizAnswer,
+    handleSponsorClick,
+    handleWaveCrashComplete,
+    showLeaderboardModal,
+    hideLeaderboardModal,
+    handleLeaderboardNameSubmit,
+    resetGame,
+    triggerBoardFlash,
+    pauseGame,
+    activeEvents,
+    dailyChallenge,
+    engagementData,
+    gameOverCountdown,
+    boardFlash,
+    matchedRows,
+    matchedCols,
+    swappingPieces
+  };
+} 

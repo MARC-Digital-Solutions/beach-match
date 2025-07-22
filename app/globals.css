@@ -1,0 +1,194 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for Beach Match */
+
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  border: none;
+}
+
+/* Beach-themed gradient backgrounds */
+.beach-gradient {
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 50%, #0d47a1 100%);
+}
+
+.radio-gradient {
+  background: linear-gradient(135deg, #e53935 0%, #d32f2f 50%, #c62828 100%);
+}
+
+.starfish-gradient {
+  background: linear-gradient(135deg, #ffb300 0%, #ffa000 50%, #ff8f00 100%);
+}
+
+/* Custom animations */
+@keyframes wave {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+.wave {
+  animation: wave 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Responsive design helpers for 8x8 grid */
+@media (max-width: 640px) {
+  .match-grid {
+    padding: 0.5rem;
+    gap: 0.125rem;
+  }
+  
+  .match-piece {
+    padding: 0.25rem;
+    font-size: 0.6rem;
+  }
+}
+
+/* Missing animations for intro sequence */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.6s ease-out forwards;
+}
+
+/* Focus and accessibility improvements */
+button:focus-visible {
+  outline: 2px solid #0ea5e9;
+  outline-offset: 2px;
+} 
+
+@keyframes shake {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(-4px, 2px) rotate(-2deg); }
+  40% { transform: translate(4px, -2px) rotate(2deg); }
+  60% { transform: translate(-2px, 2px) rotate(-1deg); }
+  80% { transform: translate(2px, -2px) rotate(1deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+.animate-shake {
+  animation: shake 0.7s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+.shadow-glow {
+  box-shadow: 0 0 16px 4px #faff70, 0 0 32px 8px #a7ffeb;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; transform: scale(0.7); }
+}
+.fade-out {
+  animation: fadeOut 0.4s forwards;
+} 
+
+@keyframes flash-border {
+  0% { box-shadow: 0 0 0 0 #facc15, 0 0 40px 10px #fde68a; }
+  50% { box-shadow: 0 0 0 12px #fffbe6, 0 0 80px 30px #ffe066; }
+  100% { box-shadow: 0 0 0 20px #facc15, 0 0 120px 40px #fffbe6; }
+}
+.animate-flash-border {
+  animation: flash-border 0.5s infinite alternate;
+}
+.shadow-glow-board {
+  box-shadow: 0 0 40px 10px #facc15, 0 0 80px 20px #fde68a;
+}
+@keyframes glow-strong {
+  0% { box-shadow: 0 0 20px 8px #34d399, 0 0 40px 16px #facc15; }
+  100% { box-shadow: 0 0 60px 24px #34d399, 0 0 120px 48px #facc15; }
+}
+.animate-glow-strong {
+  animation: glow-strong 0.5s infinite alternate;
+} 
+
+@keyframes board-flash {
+  0% { border-color: #ffe066; box-shadow: 0 0 0 8px #ffe066, 0 0 32px 16px #fffbe6; }
+  50% { border-color: #fffbe6; box-shadow: 0 0 0 16px #ffe066, 0 0 64px 32px #ffe066; }
+  100% { border-color: #ffe066; box-shadow: 0 0 0 8px #ffe066, 0 0 32px 16px #fffbe6; }
+}
+.animate-board-flash { animation: board-flash 4s cubic-bezier(0.4,0,0.2,1); }
+
+@keyframes hint-glow {
+  0%, 100% { box-shadow: 0 0 0 0 #ffe066; }
+  50% { box-shadow: 0 0 24px 8px #ffe066; }
+}
+.animate-hint-glow { animation: hint-glow 1.5s infinite; }
+
+@keyframes hint-star-glow {
+  0%, 100% { text-shadow: 0 0 0 #ffe066, 0 0 0 #fffbe6; }
+  50% { text-shadow: 0 0 24px #ffe066, 0 0 32px #fffbe6; }
+}
+.animate-hint-star-glow { animation: hint-star-glow 1.5s infinite; }
+
+@keyframes swipe-effect-row {
+  0% { background: rgba(255,255,0,0.0); }
+  20% { background: rgba(255,255,0,0.7); }
+  50% { background: rgba(255,255,255,0.9); }
+  100% { background: rgba(255,255,0,0.0); }
+}
+.swipe-effect-row {
+  animation: swipe-effect-row 0.35s linear;
+}
+@keyframes swipe-effect-col {
+  0% { background: rgba(255,255,0,0.0); }
+  20% { background: rgba(255,255,0,0.7); }
+  50% { background: rgba(255,255,255,0.9); }
+  100% { background: rgba(255,255,0,0.0); }
+}
+.swipe-effect-col {
+  animation: swipe-effect-col 0.35s linear;
+}
+.piece-swap {
+  transition: transform 0.18s cubic-bezier(.4,2,.6,1);
+}
+.board-flash-overlay {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, #fffbe6 70%, #ffe066 100%);
+  opacity: 1;
+  z-index: 100;
+  animation: board-flash 0.42s linear;
+} 
