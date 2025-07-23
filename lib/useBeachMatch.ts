@@ -61,6 +61,9 @@ export function useBeachMatch(gameStarted: boolean = false) {
   useEffect(() => { hasMadeFirstMoveRef.current = hasMadeFirstMove; }, [hasMadeFirstMove]);
   useEffect(() => { gameOverCountdownRef.current = gameOverCountdown; }, [gameOverCountdown]);
 
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[DEBUG] useBeachMatch hook loaded');
+  }
   // Initialize game systems and create initial grid on client only
   useEffect(() => {
     // Initialize the grid only on the client to avoid hydration mismatch
@@ -93,6 +96,9 @@ export function useBeachMatch(gameStarted: boolean = false) {
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
       console.log('[DEBUG] useEffect (init countdown):', { gameStarted, gridLength: gameState.grid.length, gameOverCountdown });
+      if (!gameStarted) console.log('[DEBUG] gameStarted is false');
+      if (gameState.grid.length === 0) console.log('[DEBUG] grid is empty');
+      if (gameOverCountdown !== null) console.log('[DEBUG] gameOverCountdown is not null:', gameOverCountdown);
     }
     if (gameStarted && gameState.grid.length > 0 && gameOverCountdown === null) {
       if (process.env.NODE_ENV === 'development') {
