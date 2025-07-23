@@ -5,11 +5,11 @@ export class BeachMatchEngine {
   private static readonly PIECE_TYPES: PieceType[] = ['beach_ball', 'microphone', 'rocket', 'palm_tree', 'boat'];
   private static readonly MIN_MATCH = 3;
   
-  // Quiz cooldown timers (2 minutes = 120000ms)
+  // Quiz cooldown timers (30 seconds = 30000ms)
   private static lastSongQuizTime: number = Date.now();
   private static lastSpaceQuizTime: number = Date.now();
   private static lastBeachQuizTime: number = Date.now();
-  private static readonly QUIZ_COOLDOWN = 2 * 60 * 1000; // 2 minutes in milliseconds
+  private static readonly QUIZ_COOLDOWN = 30 * 1000; // 30 seconds in milliseconds
   
   // Hint system
   private static readonly HINT_DELAY = 3000; // 3 seconds (reduced from 6)
@@ -375,8 +375,8 @@ export class BeachMatchEngine {
   }
 
   static shouldTriggerQuiz(pieceType: PieceType, totalMatches: number): boolean {
-    // Only trigger after 2nd match and beyond
-    if (totalMatches < 2) return false;
+    // Only trigger after 1st match and beyond
+    if (totalMatches < 1) return false;
     
     const quizType = this.determineQuizType(pieceType);
     if (!quizType) return false;
@@ -416,7 +416,7 @@ export class BeachMatchEngine {
             break;
         }
         
-        console.log(`${quizType} quiz triggered for ${pieceType}! Next quiz available in 2 minutes.`);
+        console.log(`${quizType} quiz triggered for ${pieceType}! Next quiz available in 30 seconds.`);
         return true;
       }
     }

@@ -278,6 +278,11 @@ export function useBeachMatch() {
 
   // Always-on countdown timer for lives
   useEffect(() => {
+    // Only run countdown when game is active (not over, not paused)
+    if (gameState.isGameOver || gameState.isPaused) {
+      return;
+    }
+    
     if (gameOverCountdown === null) {
       setGameOverCountdown(60);
       setBoardHasFlashed(false); // trigger board flash
@@ -303,7 +308,7 @@ export function useBeachMatch() {
       setGameOverCountdown(c => (c !== null ? c - 1 : null));
     }, 1000);
     return () => clearTimeout(timer);
-  }, [gameOverCountdown]);
+  }, [gameOverCountdown, gameState.isGameOver, gameState.isPaused]);
 
   // When player earns a life, reset countdown to 60 and flash board
   useEffect(() => {
@@ -424,7 +429,7 @@ export function useBeachMatch() {
       // Check for piece-specific trivia triggers
       const mostCommonPiece = [...matchedPieceTypes][0]; // Get first matched piece type
       if (mostCommonPiece && BeachMatchEngine.shouldTriggerQuiz(mostCommonPiece as any, newState.totalMatches)) {
-        setTimeout(() => triggerPieceSpecificQuiz(mostCommonPiece as any), 500);
+        triggerPieceSpecificQuiz(mostCommonPiece as any);
       }
 
       // Check for wave crash event
@@ -541,7 +546,7 @@ export function useBeachMatch() {
     setSongQuizTimer(30);
     setIsProcessing(false);
     setHasMadeFirstMove(false);
-    setGameOverCountdown(null);
+    setGameOverCountdown(60); // Start countdown immediately
     if (lifeTimerRef.current) {
       clearInterval(lifeTimerRef.current);
     }

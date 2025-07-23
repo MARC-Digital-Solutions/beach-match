@@ -540,40 +540,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Game Actions */}
-              <div className="flex flex-wrap gap-2 justify-center mb-6">
-                <button
-                  onClick={handleNewGameWithIntro}
-                  className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2 text-sm"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  <span>New Game</span>
-                </button>
-                
-                <button
-                  onClick={pauseGame}
-                  className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2 text-sm"
-                >
-                  {gameState.isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
-                  <span>{gameState.isPaused ? 'Resume' : 'Pause'}</span>
-                </button>
 
-                <button
-                  onClick={showLeaderboardModal}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2 text-sm"
-                >
-                  <Trophy className="w-4 h-4" />
-                  <span>Leaderboard</span>
-                </button>
-                
-                <button
-                  onClick={() => setShowStats(!showStats)}
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2 text-sm"
-                >
-                  <Info className="w-4 h-4" />
-                  <span>Stats</span>
-                </button>
-              </div>
             </div>
 
             {/* Thin Banner Ad - Right Side */}
@@ -648,6 +615,41 @@ export default function HomePage() {
             </div>
           </div>
         )}
+
+        {/* Game Actions - Moved down for better spacing */}
+        <div className="flex flex-wrap gap-2 justify-center mb-8 mt-4">
+          <button
+            onClick={handleNewGameWithIntro}
+            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2 text-sm"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span>New Game</span>
+          </button>
+          
+          <button
+            onClick={pauseGame}
+            className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2 text-sm"
+          >
+            {gameState.isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+            <span>{gameState.isPaused ? 'Resume' : 'Pause'}</span>
+          </button>
+
+          <button
+            onClick={showLeaderboardModal}
+            className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2 text-sm"
+          >
+            <Trophy className="w-4 h-4" />
+            <span>Leaderboard</span>
+          </button>
+          
+          <button
+            onClick={() => setShowStats(!showStats)}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2 text-sm"
+          >
+            <Info className="w-4 h-4" />
+            <span>Stats</span>
+          </button>
+        </div>
 
         {/* Song Quiz Modal - Always available */}
         <SongQuizModal
