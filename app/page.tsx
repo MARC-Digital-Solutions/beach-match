@@ -240,8 +240,8 @@ export default function HomePage() {
     // Fetch immediately
     fetchMetadata();
     
-    // Set up interval to fetch every 10 seconds
-    const interval = setInterval(fetchMetadata, 10000);
+    // Set up interval to fetch every 8 seconds
+    const interval = setInterval(fetchMetadata, 8000);
     
     return () => clearInterval(interval);
   }, []);
@@ -643,21 +643,6 @@ export default function HomePage() {
             <span>Leaderboard</span>
           </button>
 
-          {/* DEBUG: Test countdown button */}
-          <button
-            onClick={() => {
-              console.log('[DEBUG] Manually setting countdown to 10');
-              // Access the setGameOverCountdown from the hook
-              if (typeof window !== 'undefined') {
-                // This is a temporary debug solution
-                console.log('[DEBUG] Current countdown state:', gameOverCountdown);
-              }
-            }}
-            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2 text-sm"
-          >
-            <span>🔧 Debug Countdown</span>
-          </button>
-          
           <button
             onClick={() => setShowStats(!showStats)}
             className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2 text-sm"
