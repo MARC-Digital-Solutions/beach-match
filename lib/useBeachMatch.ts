@@ -287,49 +287,34 @@ export function useBeachMatch(gameStarted: boolean = false) {
 
   // Always-on countdown timer for lives
   useEffect(() => {
-    console.log('[CountdownTimer] Effect triggered. countdown:', gameOverCountdown, 'gameOver:', gameState.isGameOver, 'paused:', gameState.isPaused);
-    
-    // Only run countdown when game is active (not over, not paused)
-    if (gameState.isGameOver || gameState.isPaused) {
-      console.log('[CountdownTimer] Game not active - stopping timer');
+    console.log('[CountdownTimer] Effect triggered. countdown:', gameOverCountdown, 'gameOver:', gameState.isGameOver, 'paused:', gameState.isPaused, 'gameStarted:', gameStarted);
+    // Only run countdown when game is active (not over, not paused, and gameStarted)
+    if (!gameStarted || gameState.isGameOver || gameState.isPaused) {
+      console.log('[CountdownTimer] Game not active or not started - stopping timer');
       return;
     }
-    
-    // Initialize countdown if it's null
-    if (gameOverCountdown === null) {
-      console.log('[CountdownTimer] Initializing countdown to 60');
-      setGameOverCountdown(60);
-      setBoardHasFlashed(false); // trigger board flash
+    // Don't start timer if countdown is not running or at 0
+    if (gameOverCountdown === null || gameOverCountdown <= 0) {
       return;
     }
-    
-    // Don't start timer if countdown is already running or at 0
-    if (gameOverCountdown <= 0) {
-      console.log('[CountdownTimer] Countdown at 0 - not starting timer');
-      return;
-    }
-    
     // Start the countdown timer using interval
     console.log('[CountdownTimer] Starting interval timer');
     const interval = setInterval(() => {
       const currentCountdown = gameOverCountdownRef.current;
       console.log('[CountdownTimer] Interval tick, current countdown:', currentCountdown);
-      
       if (currentCountdown === null || currentCountdown <= 0) {
         console.log('[CountdownTimer] Countdown finished, clearing interval');
         clearInterval(interval);
         return;
       }
-      
       console.log('[CountdownTimer] Ticking down from', currentCountdown, 'to', currentCountdown - 1);
       setGameOverCountdown(currentCountdown - 1);
     }, 1000);
-    
     return () => {
       console.log('[CountdownTimer] Cleaning up interval');
       clearInterval(interval);
     };
-  }, [gameState.isGameOver, gameState.isPaused]); // Removed gameOverCountdown from dependencies
+  }, [gameStarted, gameState.isGameOver, gameState.isPaused, gameOverCountdown]);
 
   // Handle countdown reaching zero
   useEffect(() => {
@@ -586,12 +571,11 @@ export function useBeachMatch(gameStarted: boolean = false) {
     setSongQuizTimer(30);
     setIsProcessing(false);
     setHasMadeFirstMove(false);
-    console.log('[resetGame] Setting countdown to 60');
-    setGameOverCountdown(60); // Start countdown immediately
+    // Do NOT setGameOverCountdown(60) here!
     if (lifeTimerRef.current) {
       clearInterval(lifeTimerRef.current);
     }
-  }, [setGameState, setShowSongQuiz, setCurrentSongQuestion, setSongQuizTimer, setIsProcessing, setHasMadeFirstMove, setGameOverCountdown]);
+  }, [setGameState, setShowSongQuiz, setCurrentSongQuestion, setSongQuizTimer, setIsProcessing, setHasMadeFirstMove]);
 
   const pauseGame = useCallback(() => {
     setGameState(prev => ({
