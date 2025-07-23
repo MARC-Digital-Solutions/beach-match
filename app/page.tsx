@@ -68,7 +68,8 @@ export default function HomePage() {
     boardFlash,
     matchedRows,
     matchedCols,
-    swappingPieces
+    swappingPieces,
+    showQuizCelebration // <-- add this
   } = useBeachMatch(gameStarted);
 
   // Handle intro sequence completion
@@ -673,6 +674,7 @@ export default function HomePage() {
           timeRemaining={songQuizTimer}
           onAnswer={handleSongQuizAnswer}
           onClose={() => handleSongQuizAnswer(-1)} // Close without answering
+          showCelebration={showQuizCelebration}
         />
 
         {/* Wave Crash Effect */}

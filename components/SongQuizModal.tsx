@@ -8,6 +8,7 @@ interface SongQuizModalProps {
   timeRemaining: number;
   onAnswer: (selectedAnswer: number) => void;
   onClose: () => void;
+  showCelebration?: boolean;
 }
 
 export const SongQuizModal: React.FC<SongQuizModalProps> = ({
@@ -15,7 +16,8 @@ export const SongQuizModal: React.FC<SongQuizModalProps> = ({
   question,
   timeRemaining,
   onAnswer,
-  onClose
+  onClose,
+  showCelebration = false
 }) => {
   // Auto-play song clip when modal opens for song questions
   useEffect(() => {
@@ -109,20 +111,18 @@ export const SongQuizModal: React.FC<SongQuizModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className={`bg-gradient-to-br ${getModalColor()} rounded-xl shadow-2xl border-4 border-white/20 max-w-md w-full mx-4 transform animate-bounce-in`}>
+      <div className={`bg-gradient-to-br ${getModalColor()} rounded-xl shadow-2xl border-4 border-white/20 max-w-md w-full mx-4 transform animate-bounce-in relative`}>
         <div className="p-6">
           {/* Header */}
           <div className="text-center mb-4">
             <div className="text-6xl mb-2">{getModalIcon()}</div>
             <h2 className="text-2xl font-bold text-white mb-2">{getModalTitle()}</h2>
-            
             {/* Timer */}
             <div className="flex items-center justify-center space-x-2 mb-4">
               <div className={`text-xl font-bold ${timeRemaining <= 10 ? 'text-red-300 animate-pulse' : 'text-yellow-300'}`}>
                 ⏱️ {timeRemaining}s
               </div>
             </div>
-            
             {/* Progress bar */}
             <div className="w-full bg-black/30 rounded-full h-2">
               <div 
@@ -163,6 +163,21 @@ export const SongQuizModal: React.FC<SongQuizModalProps> = ({
             </button>
           </div>
         </div>
+        {/* Celebration Animation Overlay */}
+        {showCelebration && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-50 pointer-events-none animate-fade-in-fast">
+            <div className="text-7xl mb-4 animate-bounce">🎉🎵✨</div>
+            <div className="text-3xl font-extrabold text-yellow-300 drop-shadow-lg animate-pulse">Correct!</div>
+            <div className="text-lg text-white mt-2 animate-fade-in">+1 Life &nbsp; +200 Points</div>
+            <div className="absolute inset-0 pointer-events-none">
+              {/* Confetti burst using emoji */}
+              <div className="absolute left-1/4 top-1/4 text-4xl animate-confetti">🎊</div>
+              <div className="absolute right-1/4 top-1/3 text-4xl animate-confetti">🎊</div>
+              <div className="absolute left-1/3 bottom-1/4 text-4xl animate-confetti">🎉</div>
+              <div className="absolute right-1/3 bottom-1/3 text-4xl animate-confetti">🎉</div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

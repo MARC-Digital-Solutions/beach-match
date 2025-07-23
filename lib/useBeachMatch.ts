@@ -57,6 +57,7 @@ export function useBeachMatch(gameStarted: boolean = false) {
   const [boardHasFlashed, setBoardHasFlashed] = useState(false);
   // Track if the user has made their first move
   const [hasMadeFirstMove, setHasMadeFirstMove] = useState(false);
+  const [showQuizCelebration, setShowQuizCelebration] = useState(false);
 
   const gameStateRef = useRef(gameState);
   const hasMadeFirstMoveRef = useRef(hasMadeFirstMove);
@@ -316,15 +317,16 @@ export function useBeachMatch(gameStarted: boolean = false) {
     }
     // Start the countdown timer using interval
     const interval = setInterval(() => {
-      const currentCountdown = gameOverCountdownRef.current;
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[DEBUG] Countdown tick:', currentCountdown);
-      }
-      if (currentCountdown === null || currentCountdown <= 0) {
-        clearInterval(interval);
-        return;
-      }
-      setGameOverCountdown(currentCountdown - 1);
+      setGameOverCountdown(prev => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[DEBUG] Countdown tick:', prev);
+        }
+        if (prev === null || prev <= 0) {
+          clearInterval(interval);
+          return prev;
+        }
+        return prev - 1;
+      });
     }, 1000);
     return () => {
       if (process.env.NODE_ENV === 'development') {
@@ -332,7 +334,7 @@ export function useBeachMatch(gameStarted: boolean = false) {
       }
       clearInterval(interval);
     };
-  }, [gameStarted, gameState.isGameOver, gameState.isPaused, gameOverCountdown]);
+  }, [gameStarted, gameState.isGameOver, gameState.isPaused]);
 
   // Handle countdown reaching zero
   useEffect(() => {
@@ -546,7 +548,12 @@ export function useBeachMatch(gameStarted: boolean = false) {
     const isCorrect = selectedAnswer === currentSongQuestion.correctAnswer;
     
     setGameState(prev => EngagementTracker.handleSongQuizComplete(prev, isCorrect));
-    
+
+    if (isCorrect) {
+      setShowQuizCelebration(true);
+      setTimeout(() => setShowQuizCelebration(false), 1500);
+    }
+
     AudioManager.stopQuizClip();
     setShowSongQuiz(false);
     setCurrentSongQuestion(null);
@@ -782,6 +789,7 @@ export function useBeachMatch(gameStarted: boolean = false) {
     boardFlash,
     matchedRows,
     matchedCols,
-    swappingPieces
+    swappingPieces,
+    showQuizCelebration
   };
 } 
