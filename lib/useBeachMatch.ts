@@ -85,6 +85,11 @@ export function useBeachMatch() {
         clearTimeout(hintTimerRef.current);
         hintTimerRef.current = null;
       }
+      // Reset activity timer to prevent immediate hint re-triggering
+      setGameState(prev => ({
+        ...prev,
+        noActivityStart: Date.now()
+      }));
     };
     
     window.addEventListener('clearHints', handleClearHints);
@@ -137,17 +142,17 @@ export function useBeachMatch() {
     if (hintTimerRef.current) {
       clearTimeout(hintTimerRef.current);
     }
-    console.log('[HintTimer] Effect run. hasMadeFirstMove:', hasMadeFirstMoveRef.current, 'boardFlash:', boardFlash, 'isGameOver:', gameStateRef.current.isGameOver, 'isPaused:', gameStateRef.current.isPaused);
-    // Only show hints after the first move AND after the entry board flash is done
-    if (!hasMadeFirstMoveRef.current || boardFlash) {
-      console.log('[HintTimer] Skipping: hasMadeFirstMove or boardFlash');
+    console.log('[HintTimer] Effect run. hasMadeFirstMove:', hasMadeFirstMoveRef.current, 'boardFlash:', boardFlash, 'isGameOver:', gameStateRef.current.isGameOver, 'isPaused:', gameStateRef.current.isPaused, 'isProcessing:', isProcessing);
+    // Only show hints after the first move AND after the entry board flash is done AND when not processing
+    if (!hasMadeFirstMoveRef.current || boardFlash || isProcessing) {
+      console.log('[HintTimer] Skipping: hasMadeFirstMove:', !hasMadeFirstMoveRef.current, 'boardFlash:', boardFlash, 'isProcessing:', isProcessing);
       return;
     }
     if (!gameStateRef.current.isGameOver && !gameStateRef.current.isPaused && gameStateRef.current.noActivityStart) {
       const delay = 3000; // 3 seconds for hints (increased from 2)
       const showHint = () => {
         // Double-check that hints should still be shown
-        if (gameStateRef.current.isGameOver || gameStateRef.current.isPaused || !hasMadeFirstMoveRef.current || boardFlash) {
+        if (gameStateRef.current.isGameOver || gameStateRef.current.isPaused || !hasMadeFirstMoveRef.current || boardFlash || isProcessing) {
           console.log('[HintTimer] Cancelling hint - game state changed');
           return;
         }
@@ -194,8 +199,8 @@ export function useBeachMatch() {
                 isVisible: false
               }
             }));
-            // Schedule next hint if still inactive
-            if (!gameStateRef.current.isGameOver && !gameStateRef.current.isPaused && hasMadeFirstMoveRef.current && !boardFlash) {
+            // Schedule next hint if still inactive and not processing
+            if (!gameStateRef.current.isGameOver && !gameStateRef.current.isPaused && hasMadeFirstMoveRef.current && !boardFlash && !isProcessing) {
               hintTimerRef.current = setTimeout(showHint, delay);
             }
           }, 1500); // Increased hint display time to 1.5 seconds
@@ -211,7 +216,7 @@ export function useBeachMatch() {
         clearTimeout(hintTimerRef.current);
       }
     };
-  }, [gameState.noActivityStart, gameState.isGameOver, gameState.isPaused, hasMadeFirstMove, boardFlash, setIsShuffling, setGameState]);
+  }, [gameState.noActivityStart, gameState.isGameOver, gameState.isPaused, hasMadeFirstMove, boardFlash, isProcessing, setIsShuffling, setGameState]);
 
   // Start game loop for engagement tracking
   useEffect(() => {
@@ -369,13 +374,14 @@ export function useBeachMatch() {
   }, [setShowWaveCrash]);
 
   const processMatches = useCallback(async (grid: (GamePiece | null)[][]) => {
+    console.log('[processMatches] Starting match processing');
     let currentGrid = [...grid.map(row => [...row])];
     let totalScore = 0;
     let comboCount = 0;
     let hasMatches = true;
     let matchedPieceTypes: Set<string> = new Set();
 
-    console.log('Processing matches...');
+    console.log('[processMatches] Processing matches...');
 
     while (hasMatches) {
       const matches = BeachMatchEngine.findMatches(currentGrid);
@@ -421,7 +427,7 @@ export function useBeachMatch() {
       await new Promise(resolve => setTimeout(resolve, 200));
     }
 
-    console.log(`Processing complete: ${totalScore} points, ${comboCount} combos`);
+    console.log(`[processMatches] Processing complete: ${totalScore} points, ${comboCount} combos`);
 
     // Update game state with match information
     setGameState(prev => {
@@ -587,7 +593,12 @@ export function useBeachMatch() {
   // --- Now use them in handlePieceClick ---
   const handlePieceClick = useCallback((row: number, col: number) => {
     console.log('[handlePieceClick] called. isProcessing:', isProcessing, 'hasMadeFirstMove:', hasMadeFirstMove, 'hintState:', gameState.hintState);
-    if (isProcessing) return;
+    
+    // Don't allow clicks during processing or if game is over/paused
+    if (isProcessing || gameState.isGameOver || gameState.isPaused) {
+      console.log('[handlePieceClick] Blocked - processing:', isProcessing, 'gameOver:', gameState.isGameOver, 'paused:', gameState.isPaused);
+      return;
+    }
 
     // Set hasMadeFirstMove on first valid click
     if (!hasMadeFirstMove) {
@@ -596,7 +607,7 @@ export function useBeachMatch() {
     }
     console.log('Piece clicked:', row, col);
 
-    // Immediately clear any visible hints to prevent interference
+    // Immediately clear any visible hints and reset activity timer
     setGameState(prevState => ({
       ...prevState,
       noActivityStart: Date.now(),
@@ -641,6 +652,7 @@ export function useBeachMatch() {
       
       if (isAdjacent) {
         // Attempt swap
+        console.log('[handlePieceClick] Starting swap process');
         setIsProcessing(true);
         setSwappingPieces([firstPiece, { row, col }]);
         
@@ -659,13 +671,18 @@ export function useBeachMatch() {
         
         // Check for matches after swap
         setTimeout(() => {
+          console.log('[handlePieceClick] Checking matches after swap');
           setGameState(prevState => {
             const matches = BeachMatchEngine.findMatches(prevState.grid);
+            console.log('[handlePieceClick] Matches found:', matches.length);
+            
             if (matches.length > 0) {
               // Valid swap - process matches
+              console.log('[handlePieceClick] Valid swap - processing matches');
               processMatches(prevState.grid);
             } else {
               // Invalid swap - revert
+              console.log('[handlePieceClick] Invalid swap - reverting');
               const revertedGrid = [...prevState.grid.map(row => [...row])];
               const temp = revertedGrid[firstPiece.row][firstPiece.col];
               revertedGrid[firstPiece.row][firstPiece.col] = revertedGrid[row][col];
@@ -707,6 +724,7 @@ export function useBeachMatch() {
           
           setSwappingPieces([]);
           setIsProcessing(false);
+          console.log('[handlePieceClick] Swap process complete');
         }, 300);
       } else {
         // Not adjacent - select new piece

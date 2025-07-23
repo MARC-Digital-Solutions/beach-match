@@ -149,7 +149,10 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                           const event = new CustomEvent('clearHints');
                           window.dispatchEvent(event);
                         }
-                        onPieceClick(rowIndex, colIndex);
+                        // Add a small delay to ensure hints are cleared before processing click
+                        setTimeout(() => {
+                          onPieceClick(rowIndex, colIndex);
+                        }, 10);
                       }}
                       disabled={!piece || isProcessing}
                     >
