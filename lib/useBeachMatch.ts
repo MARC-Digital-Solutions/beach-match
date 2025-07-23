@@ -91,7 +91,13 @@ export function useBeachMatch(gameStarted: boolean = false) {
 
   // Initialize countdown timer when game starts
   useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[DEBUG] useEffect (init countdown):', { gameStarted, gridLength: gameState.grid.length, gameOverCountdown });
+    }
     if (gameStarted && gameState.grid.length > 0 && gameOverCountdown === null) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[DEBUG] Setting gameOverCountdown to 60');
+      }
       setGameOverCountdown(60);
     }
   }, [gameStarted, gameState.grid.length, gameOverCountdown]);
@@ -287,10 +293,11 @@ export function useBeachMatch(gameStarted: boolean = false) {
 
   // Always-on countdown timer for lives
   useEffect(() => {
-    console.log('[CountdownTimer] Effect triggered. countdown:', gameOverCountdown, 'gameOver:', gameState.isGameOver, 'paused:', gameState.isPaused, 'gameStarted:', gameStarted);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[DEBUG] useEffect (countdown tick):', { gameStarted, isGameOver: gameState.isGameOver, isPaused: gameState.isPaused, gameOverCountdown });
+    }
     // Only run countdown when game is active (not over, not paused, and gameStarted)
     if (!gameStarted || gameState.isGameOver || gameState.isPaused) {
-      console.log('[CountdownTimer] Game not active or not started - stopping timer');
       return;
     }
     // Don't start timer if countdown is not running or at 0
@@ -298,20 +305,21 @@ export function useBeachMatch(gameStarted: boolean = false) {
       return;
     }
     // Start the countdown timer using interval
-    console.log('[CountdownTimer] Starting interval timer');
     const interval = setInterval(() => {
       const currentCountdown = gameOverCountdownRef.current;
-      console.log('[CountdownTimer] Interval tick, current countdown:', currentCountdown);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[DEBUG] Countdown tick:', currentCountdown);
+      }
       if (currentCountdown === null || currentCountdown <= 0) {
-        console.log('[CountdownTimer] Countdown finished, clearing interval');
         clearInterval(interval);
         return;
       }
-      console.log('[CountdownTimer] Ticking down from', currentCountdown, 'to', currentCountdown - 1);
       setGameOverCountdown(currentCountdown - 1);
     }, 1000);
     return () => {
-      console.log('[CountdownTimer] Cleaning up interval');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[DEBUG] Cleaning up interval');
+      }
       clearInterval(interval);
     };
   }, [gameStarted, gameState.isGameOver, gameState.isPaused, gameOverCountdown]);
@@ -565,13 +573,15 @@ export function useBeachMatch(gameStarted: boolean = false) {
       lastMatchedPiece: null,
       noActivityStart: Date.now()
     }));
-    
     setShowSongQuiz(false);
     setCurrentSongQuestion(null);
     setSongQuizTimer(30);
     setIsProcessing(false);
     setHasMadeFirstMove(false);
-    // Do NOT setGameOverCountdown(60) here!
+    setGameOverCountdown(null); // <-- Ensure countdown is reset to null
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[DEBUG] resetGame called, gameOverCountdown set to null');
+    }
     if (lifeTimerRef.current) {
       clearInterval(lifeTimerRef.current);
     }
