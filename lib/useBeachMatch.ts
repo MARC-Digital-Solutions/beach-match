@@ -318,13 +318,13 @@ export function useBeachMatch(gameStarted: boolean = false) {
     // Start the countdown timer using interval
     const interval = setInterval(() => {
       setGameOverCountdown(prev => {
-      if (process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV === 'development') {
           console.log('[DEBUG] Countdown tick:', prev);
-      }
+        }
         if (prev === null || prev <= 0) {
-        clearInterval(interval);
+          clearInterval(interval);
           return prev;
-      }
+        }
         return prev - 1;
       });
     }, 1000);
@@ -334,7 +334,7 @@ export function useBeachMatch(gameStarted: boolean = false) {
       }
       clearInterval(interval);
     };
-  }, [gameStarted, gameState.isGameOver, gameState.isPaused]);
+  }, [gameStarted, gameState.isGameOver, gameState.isPaused, gameOverCountdown]);
 
   // Handle countdown reaching zero
   useEffect(() => {
@@ -551,9 +551,16 @@ export function useBeachMatch(gameStarted: boolean = false) {
 
     if (isCorrect) {
       setShowQuizCelebration(true);
-      setTimeout(() => setShowQuizCelebration(false), 1500);
+      setTimeout(() => {
+        setShowQuizCelebration(false);
+        AudioManager.stopQuizClip();
+        setShowSongQuiz(false);
+        setCurrentSongQuestion(null);
+        setSongQuizTimer(30);
+      }, 1500);
+      return;
     }
-    
+
     AudioManager.stopQuizClip();
     setShowSongQuiz(false);
     setCurrentSongQuestion(null);
