@@ -69,7 +69,7 @@ export default function HomePage() {
     matchedRows,
     matchedCols,
     swappingPieces
-  } = useBeachMatch();
+  } = useBeachMatch(gameStarted);
 
   // Handle intro sequence completion
   const handleIntroComplete = () => {

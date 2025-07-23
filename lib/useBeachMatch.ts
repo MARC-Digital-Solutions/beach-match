@@ -6,7 +6,7 @@ import { EngagementTracker } from './engagementTracker';
 import { PowerUpSystem } from './powerUpSystem';
 import { EventManager } from './eventManager';
 
-export function useBeachMatch() {
+export function useBeachMatch(gameStarted: boolean = false) {
   const [gameState, setGameState] = useState<BeachMatchState>({
     score: 0,
     lives: 3,
@@ -91,11 +91,10 @@ export function useBeachMatch() {
 
   // Initialize countdown timer when game starts
   useEffect(() => {
-    if (gameState.grid.length > 0 && gameOverCountdown === null) {
-      console.log('[GameInit] Game grid created, starting countdown timer');
+    if (gameStarted && gameState.grid.length > 0 && gameOverCountdown === null) {
       setGameOverCountdown(60);
     }
-  }, [gameState.grid.length]); // Removed gameOverCountdown from dependencies
+  }, [gameStarted, gameState.grid.length, gameOverCountdown]);
 
   // Reset lastHintTime on game start and after any user action
   useEffect(() => {
