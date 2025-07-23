@@ -152,6 +152,26 @@ export function useBeachMatch() {
           return;
         }
         
+        // Check if there are valid moves before showing hint
+        if (!BeachMatchEngine.hasValidMoves(gameStateRef.current.grid)) {
+          console.log('[HintTimer] No valid moves - triggering shuffle instead of hint');
+          // Trigger shuffle instead of showing hint
+          setIsShuffling(true);
+          setTimeout(() => {
+            setGameState(prev => ({
+              ...prev,
+              grid: BeachMatchEngine.shuffleGrid(prev.grid),
+              noActivityStart: Date.now(),
+              hintState: {
+                ...prev.hintState,
+                isVisible: false
+              }
+            }));
+            setIsShuffling(false);
+          }, 800);
+          return;
+        }
+        
         const possibleMatch = BeachMatchEngine.findPossibleMatch(gameStateRef.current.grid);
         console.log('[HintTimer] showHint called. possibleMatch:', possibleMatch);
         if (possibleMatch) {
@@ -191,7 +211,7 @@ export function useBeachMatch() {
         clearTimeout(hintTimerRef.current);
       }
     };
-  }, [gameState.noActivityStart, gameState.isGameOver, gameState.isPaused, hasMadeFirstMove, boardFlash]);
+  }, [gameState.noActivityStart, gameState.isGameOver, gameState.isPaused, hasMadeFirstMove, boardFlash, setIsShuffling, setGameState]);
 
   // Start game loop for engagement tracking
   useEffect(() => {
@@ -201,19 +221,38 @@ export function useBeachMatch() {
 
     gameLoopRef.current = setInterval(() => {
       setGameState(prevState => {
-        if (!prevState.isGameOver && !prevState.isPaused) {
-          return EngagementTracker.updateStreamTime(prevState);
+        const newState = EngagementTracker.updateStreamTime(prevState);
+        
+        // Check for valid moves every few seconds and shuffle if needed
+        if (hasMadeFirstMove && !isProcessing && !newState.isGameOver && !newState.isPaused) {
+          if (!BeachMatchEngine.hasValidMoves(newState.grid)) {
+            console.log('[GameLoop] No valid moves detected - triggering shuffle');
+            setIsShuffling(true);
+            setTimeout(() => {
+              setGameState(prev => ({
+                ...prev,
+                grid: BeachMatchEngine.shuffleGrid(prev.grid),
+                noActivityStart: Date.now(),
+                hintState: {
+                  ...prev.hintState,
+                  isVisible: false
+                }
+              }));
+              setIsShuffling(false);
+            }, 800);
+          }
         }
-        return prevState;
+        
+        return newState;
       });
-    }, 1000); // Update every second
+    }, 1000);
 
     return () => {
       if (gameLoopRef.current) {
         clearInterval(gameLoopRef.current);
       }
     };
-  }, [gameState.isGameOver, gameState.isPaused]);
+  }, [hasMadeFirstMove, isProcessing, setIsShuffling, setGameState]);
 
   // Life timer - reduces lives every 5 minutes of active gameplay
   useEffect(() => {
@@ -639,6 +678,21 @@ export function useBeachMatch() {
               
               // Check for game over after invalid move
               if (!BeachMatchEngine.hasValidMoves(revertedGrid)) {
+                console.log('[handlePieceClick] No valid moves after invalid swap - triggering shuffle');
+                setIsShuffling(true);
+                setTimeout(() => {
+                  setGameState(prev => ({
+                    ...prev,
+                    grid: BeachMatchEngine.shuffleGrid(prev.grid),
+                    noActivityStart: Date.now(),
+                    hintState: {
+                      ...prev.hintState,
+                      isVisible: false
+                    }
+                  }));
+                  setIsShuffling(false);
+                }, 800);
+              } else {
                 setGameOverCountdown(60);
                 setBoardFlash(true);
                 setTimeout(() => setBoardFlash(false), 2000);
@@ -663,7 +717,7 @@ export function useBeachMatch() {
         }));
       }
     }
-  }, [isProcessing, hasMadeFirstMove, setIsProcessing, setSwappingPieces, setGameState, setBoardFlash, setGameOverCountdown, setHasMadeFirstMove, activatePowerUp, processMatches]);
+  }, [isProcessing, hasMadeFirstMove, setIsProcessing, setSwappingPieces, setGameState, setBoardFlash, setGameOverCountdown, setHasMadeFirstMove, activatePowerUp, processMatches, setIsShuffling]);
 
   return {
     gameState,
