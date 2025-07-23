@@ -202,7 +202,11 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                     <div className="text-white text-2xl font-extrabold drop-shadow-lg animate-bounce">{gameOverCountdown}</div>
                     <div className="text-white text-xs uppercase tracking-wider font-bold animate-pulse">TIME LEFT</div>
                   </>
-                ) : null}
+                ) : (
+                  <div className="text-white/60 text-xs">
+                    Countdown: {gameOverCountdown === null ? 'null' : gameOverCountdown}
+                  </div>
+                )}
               </div>
             </div>
             {/* Enhanced Hint Indicator */}

@@ -87,6 +87,14 @@ export function useBeachMatch() {
     };
   }, []);
 
+  // Initialize countdown timer when game starts
+  useEffect(() => {
+    if (gameState.grid.length > 0 && gameOverCountdown === null) {
+      console.log('[GameInit] Game grid created, starting countdown timer');
+      setGameOverCountdown(60);
+    }
+  }, [gameState.grid.length, gameOverCountdown]);
+
   // Reset lastHintTime on game start and after any user action
   useEffect(() => {
     setGameState(prev => ({
@@ -278,21 +286,52 @@ export function useBeachMatch() {
 
   // Always-on countdown timer for lives
   useEffect(() => {
+    console.log('[CountdownTimer] Effect triggered. countdown:', gameOverCountdown, 'gameOver:', gameState.isGameOver, 'paused:', gameState.isPaused);
+    
     // Only run countdown when game is active (not over, not paused)
     if (gameState.isGameOver || gameState.isPaused) {
+      console.log('[CountdownTimer] Game not active - stopping timer');
       return;
     }
     
+    // Initialize countdown if it's null
     if (gameOverCountdown === null) {
+      console.log('[CountdownTimer] Initializing countdown to 60');
       setGameOverCountdown(60);
       setBoardHasFlashed(false); // trigger board flash
-      // Don't clear board flash here - let the welcome flash complete
       return;
     }
+    
+    // Don't start timer if countdown is already running or at 0
     if (gameOverCountdown <= 0) {
+      console.log('[CountdownTimer] Countdown at 0 - not starting timer');
+      return;
+    }
+    
+    // Start the countdown timer
+    console.log('[CountdownTimer] Starting timer for', gameOverCountdown, 'seconds');
+    const timer = setTimeout(() => {
+      setGameOverCountdown(prev => {
+        if (prev === null || prev <= 0) return null;
+        console.log('[CountdownTimer] Ticking down from', prev, 'to', prev - 1);
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => {
+      console.log('[CountdownTimer] Cleaning up timer');
+      clearTimeout(timer);
+    };
+  }, [gameOverCountdown, gameState.isGameOver, gameState.isPaused]);
+
+  // Handle countdown reaching zero
+  useEffect(() => {
+    if (gameOverCountdown === 0) {
+      console.log('[CountdownTimer] Countdown reached 0 - removing life');
       // Remove a life and reset countdown
       setGameState(prev => {
         const newLives = Math.max(0, prev.lives - 1);
+        console.log('[CountdownTimer] Lives reduced from', prev.lives, 'to', newLives);
         return {
           ...prev,
           lives: newLives,
@@ -301,14 +340,8 @@ export function useBeachMatch() {
       });
       setGameOverCountdown(60);
       setBoardHasFlashed(false); // trigger board flash
-      // Don't clear board flash here - let the welcome flash complete
-      return;
     }
-    const timer = setTimeout(() => {
-      setGameOverCountdown(c => (c !== null ? c - 1 : null));
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [gameOverCountdown, gameState.isGameOver, gameState.isPaused]);
+  }, [gameOverCountdown]);
 
   // When player earns a life, reset countdown to 60 and flash board
   useEffect(() => {
@@ -546,6 +579,7 @@ export function useBeachMatch() {
     setSongQuizTimer(30);
     setIsProcessing(false);
     setHasMadeFirstMove(false);
+    console.log('[resetGame] Setting countdown to 60');
     setGameOverCountdown(60); // Start countdown immediately
     if (lifeTimerRef.current) {
       clearInterval(lifeTimerRef.current);
