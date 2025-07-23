@@ -219,11 +219,30 @@ export default function HomePage() {
           }
         }
         
+        // Fallback: If albumArt is still empty, try iTunes Search API
+        if (!albumArt && title && artist) {
+          try {
+            const itunesRes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(artist + ' ' + title)}&entity=song&limit=1`);
+            if (itunesRes.ok) {
+              const itunesData = await itunesRes.json();
+              if (itunesData.results && itunesData.results.length > 0) {
+                albumArt = itunesData.results[0].artworkUrl100 || itunesData.results[0].artworkUrl60 || '';
+                if (albumArt) {
+                  // Use higher-res version if available
+                  albumArt = albumArt.replace('100x100bb', '300x300bb');
+                }
+              }
+            }
+          } catch (itunesErr) {
+            console.warn('iTunes album art lookup failed:', itunesErr);
+          }
+        }
+        
         console.log('Parsed metadata:', { title, artist, albumArt });
         
         setNowPlaying({
           title: title || '98.5 The Beach Live',
-          artist: artist || 'Space Coast&apos;s Greatest Hits',
+          artist: artist || 'Space Coast\'s Greatest Hits',
           albumArt: albumArt || '',
           duration: 0
         });
@@ -232,7 +251,7 @@ export default function HomePage() {
         console.error('Could not fetch metadata:', error);
         setNowPlaying({
           title: '98.5 The Beach Live',
-          artist: 'Space Coast&apos;s Greatest Hits',
+          artist: 'Space Coast\'s Greatest Hits',
         });
       }
     };
@@ -285,7 +304,7 @@ export default function HomePage() {
               {nowPlaying.title || '98.5 The Beach Live'}
             </div>
             <div className="text-blue-200 text-sm truncate mb-2">
-              {nowPlaying.artist || 'Space Coast&apos;s Greatest Hits'}
+              {nowPlaying.artist || 'Space Coast\'s Greatest Hits'}
             </div>
             {/* Player Controls */}
             <div className="mb-3">

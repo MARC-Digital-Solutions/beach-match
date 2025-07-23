@@ -318,13 +318,13 @@ export function useBeachMatch(gameStarted: boolean = false) {
     // Start the countdown timer using interval
     const interval = setInterval(() => {
       setGameOverCountdown(prev => {
-        if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === 'development') {
           console.log('[DEBUG] Countdown tick:', prev);
-        }
+      }
         if (prev === null || prev <= 0) {
-          clearInterval(interval);
+        clearInterval(interval);
           return prev;
-        }
+      }
         return prev - 1;
       });
     }, 1000);
@@ -553,7 +553,7 @@ export function useBeachMatch(gameStarted: boolean = false) {
       setShowQuizCelebration(true);
       setTimeout(() => setShowQuizCelebration(false), 1500);
     }
-
+    
     AudioManager.stopQuizClip();
     setShowSongQuiz(false);
     setCurrentSongQuestion(null);
