@@ -6,6 +6,10 @@ import { EngagementTracker } from './engagementTracker';
 import { PowerUpSystem } from './powerUpSystem';
 import { EventManager } from './eventManager';
 
+if (process.env.NODE_ENV === 'development') {
+  console.log('[DEBUG] useBeachMatch.ts file loaded');
+}
+
 export function useBeachMatch(gameStarted: boolean = false) {
   const [gameState, setGameState] = useState<BeachMatchState>({
     score: 0,
