@@ -56,8 +56,10 @@ export function useBeachMatch() {
 
   const gameStateRef = useRef(gameState);
   const hasMadeFirstMoveRef = useRef(hasMadeFirstMove);
+  const gameOverCountdownRef = useRef(gameOverCountdown);
   useEffect(() => { gameStateRef.current = gameState; }, [gameState]);
   useEffect(() => { hasMadeFirstMoveRef.current = hasMadeFirstMove; }, [hasMadeFirstMove]);
+  useEffect(() => { gameOverCountdownRef.current = gameOverCountdown; }, [gameOverCountdown]);
 
   // Initialize game systems and create initial grid on client only
   useEffect(() => {
@@ -93,7 +95,7 @@ export function useBeachMatch() {
       console.log('[GameInit] Game grid created, starting countdown timer');
       setGameOverCountdown(60);
     }
-  }, [gameState.grid.length, gameOverCountdown]);
+  }, [gameState.grid.length]); // Removed gameOverCountdown from dependencies
 
   // Reset lastHintTime on game start and after any user action
   useEffect(() => {
@@ -308,21 +310,27 @@ export function useBeachMatch() {
       return;
     }
     
-    // Start the countdown timer
-    console.log('[CountdownTimer] Starting timer for', gameOverCountdown, 'seconds');
-    const timer = setTimeout(() => {
-      setGameOverCountdown(prev => {
-        if (prev === null || prev <= 0) return null;
-        console.log('[CountdownTimer] Ticking down from', prev, 'to', prev - 1);
-        return prev - 1;
-      });
+    // Start the countdown timer using interval
+    console.log('[CountdownTimer] Starting interval timer');
+    const interval = setInterval(() => {
+      const currentCountdown = gameOverCountdownRef.current;
+      console.log('[CountdownTimer] Interval tick, current countdown:', currentCountdown);
+      
+      if (currentCountdown === null || currentCountdown <= 0) {
+        console.log('[CountdownTimer] Countdown finished, clearing interval');
+        clearInterval(interval);
+        return;
+      }
+      
+      console.log('[CountdownTimer] Ticking down from', currentCountdown, 'to', currentCountdown - 1);
+      setGameOverCountdown(currentCountdown - 1);
     }, 1000);
     
     return () => {
-      console.log('[CountdownTimer] Cleaning up timer');
-      clearTimeout(timer);
+      console.log('[CountdownTimer] Cleaning up interval');
+      clearInterval(interval);
     };
-  }, [gameOverCountdown, gameState.isGameOver, gameState.isPaused]);
+  }, [gameState.isGameOver, gameState.isPaused]); // Removed gameOverCountdown from dependencies
 
   // Handle countdown reaching zero
   useEffect(() => {

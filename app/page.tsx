@@ -20,8 +20,8 @@ const GameIntroSequence = dynamic(
     loading: () => (
       <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50">
         <div className="text-center">
-          <div className="text-3xl text-blue-400 font-bold animate-pulse">
-            🏖️ BEACH MATCH 🏖️
+          <div className="text-2xl text-blue-400 font-bold animate-pulse">
+            BEACH MATCH
           </div>
           <div className="text-xl text-yellow-400 font-semibold mt-2">
             Loading...
@@ -437,8 +437,8 @@ export default function HomePage() {
                   
                   {/* Game Title - Centered */}
                   <div className="text-center flex-1 mx-6">
-                    <h1 className="text-4xl md:text-5xl font-bold text-beach-700 mb-2">BEACH MATCH</h1>
-                    <p className="text-beach-600 text-lg md:text-xl">🏖️ Space Coast&apos;s Greatest Match-3 Game 🏖️</p>
+                    <h1 className="text-3xl md:text-4xl font-bold text-beach-700 mb-2 tracking-wide">BEACH MATCH</h1>
+                    <p className="text-beach-600 text-base md:text-lg font-medium">Space Coast&apos;s Greatest Match-3 Game</p>
                   </div>
                   
                   {/* Marc Digital Solutions Logo on Right */}
@@ -640,6 +640,21 @@ export default function HomePage() {
           >
             <Trophy className="w-4 h-4" />
             <span>Leaderboard</span>
+          </button>
+
+          {/* DEBUG: Test countdown button */}
+          <button
+            onClick={() => {
+              console.log('[DEBUG] Manually setting countdown to 10');
+              // Access the setGameOverCountdown from the hook
+              if (typeof window !== 'undefined') {
+                // This is a temporary debug solution
+                console.log('[DEBUG] Current countdown state:', gameOverCountdown);
+              }
+            }}
+            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2 text-sm"
+          >
+            <span>🔧 Debug Countdown</span>
           </button>
           
           <button

@@ -87,8 +87,8 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
             </div>
           </div>
           <div className="mt-6 text-center relative">
-            <div className="text-white font-bold text-2xl drop-shadow-2xl mb-2 tracking-wide">
-              🏖️ BEACH MATCH 🏖️
+            <div className="text-white font-bold text-xl drop-shadow-2xl mb-2 tracking-wide">
+              BEACH MATCH
             </div>
             <div className="text-white/90 text-base drop-shadow-lg font-medium animate-pulse">
               Loading beach game...
@@ -166,8 +166,8 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
           </div>
           {/* Game Score Card - Now positioned below the game board */}
           <div className="mt-6 text-center relative">
-            <div className="text-white font-bold text-2xl drop-shadow-2xl mb-2 tracking-wide">
-              🏖️ BEACH MATCH 🏖️
+            <div className="text-white font-bold text-xl drop-shadow-2xl mb-2 tracking-wide">
+              BEACH MATCH
             </div>
             <div className="flex justify-between items-center bg-black/20 rounded-lg p-4 border border-white/30 backdrop-blur-sm">
               {/* Score */}
