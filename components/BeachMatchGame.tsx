@@ -143,16 +143,7 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                         ${isSwapping ? 'piece-swap animate-bounce' : ''}
                       `}
                       onClick={() => {
-                        // Immediately clear hints when piece is clicked
-                        if (hintState?.isVisible) {
-                          // Force immediate hint clearing
-                          const event = new CustomEvent('clearHints');
-                          window.dispatchEvent(event);
-                        }
-                        // Add a small delay to ensure hints are cleared before processing click
-                        setTimeout(() => {
-                          onPieceClick(rowIndex, colIndex);
-                        }, 10);
+                        onPieceClick(rowIndex, colIndex);
                       }}
                       disabled={!piece || isProcessing}
                     >

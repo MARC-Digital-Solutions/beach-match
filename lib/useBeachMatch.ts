@@ -71,32 +71,10 @@ export function useBeachMatch() {
     EngagementTracker.loadEngagementData();
     EventManager.initializeEvents();
     
-    // Add event listener for immediate hint clearing
-    const handleClearHints = () => {
-      console.log('[ClearHints] Event received - clearing hints immediately');
-      setGameState(prev => ({
-        ...prev,
-        hintState: {
-          ...prev.hintState,
-          isVisible: false
-        }
-      }));
-      if (hintTimerRef.current) {
-        clearTimeout(hintTimerRef.current);
-        hintTimerRef.current = null;
-      }
-      // Reset activity timer to prevent immediate hint re-triggering
-      setGameState(prev => ({
-        ...prev,
-        noActivityStart: Date.now()
-      }));
-    };
-    
-    window.addEventListener('clearHints', handleClearHints);
+    // Hint system is now completely separate from swap logic
     
     return () => {
       EventManager.cleanup();
-      window.removeEventListener('clearHints', handleClearHints);
       if (gameLoopRef.current) {
         clearInterval(gameLoopRef.current);
       }
@@ -137,7 +115,7 @@ export function useBeachMatch() {
   //   return () => clearTimeout(timer);
   // }, []);
 
-  // Hint system timer
+  // Hint system timer - COMPLETELY SEPARATE from swap logic
   useEffect(() => {
     if (hintTimerRef.current) {
       clearTimeout(hintTimerRef.current);
@@ -303,7 +281,7 @@ export function useBeachMatch() {
     if (gameOverCountdown === null) {
       setGameOverCountdown(60);
       setBoardHasFlashed(false); // trigger board flash
-      setBoardFlash(false);
+      // Don't clear board flash here - let the welcome flash complete
       return;
     }
     if (gameOverCountdown <= 0) {
@@ -318,7 +296,7 @@ export function useBeachMatch() {
       });
       setGameOverCountdown(60);
       setBoardHasFlashed(false); // trigger board flash
-      setBoardFlash(false);
+      // Don't clear board flash here - let the welcome flash complete
       return;
     }
     const timer = setTimeout(() => {
@@ -332,7 +310,7 @@ export function useBeachMatch() {
     if (gameState.lives > 0 && gameOverCountdown !== 60) {
       setGameOverCountdown(60);
       setBoardHasFlashed(false);
-      setBoardFlash(false);
+      // Don't clear board flash here - let the welcome flash complete
     }
   }, [gameState.lives, gameOverCountdown]);
 
@@ -394,8 +372,11 @@ export function useBeachMatch() {
       // Trigger board flash for any 4- or 5-piece match
       const hasBigMatch = matches.some(match => match.pieces.length === 4 || match.pieces.length === 5);
       if (hasBigMatch) {
-        setBoardFlash(true);
-        setTimeout(() => setBoardFlash(false), 1000); // 1s flash
+        // Don't trigger board flash during initial welcome flash
+        if (!boardFlash) {
+          setBoardFlash(true);
+          setTimeout(() => setBoardFlash(false), 1000); // 1s flash
+        }
       }
 
       console.log(`Found ${matches.length} matches`);
@@ -476,7 +457,7 @@ export function useBeachMatch() {
     });
 
     setIsProcessing(false);
-  }, [setGameState, setBoardFlash, setIsProcessing, setIsShuffling, triggerPieceSpecificQuiz, triggerWaveCrash]);
+  }, [setGameState, setBoardFlash, setIsProcessing, setIsShuffling, triggerPieceSpecificQuiz, triggerWaveCrash, boardFlash]);
 
   const activatePowerUp = useCallback((powerUpType: any, row: number, col: number) => {
     setIsProcessing(true);
@@ -530,7 +511,7 @@ export function useBeachMatch() {
 
   const triggerBoardFlash = useCallback(() => {
     setBoardFlash(true);
-    setTimeout(() => setBoardFlash(false), 6000); // 6 seconds for a more prominent flash
+    setTimeout(() => setBoardFlash(false), 8000); // 8 seconds for a longer welcome flash
   }, [setBoardFlash]);
 
   const resetGame = useCallback(() => {
@@ -592,7 +573,7 @@ export function useBeachMatch() {
 
   // --- Now use them in handlePieceClick ---
   const handlePieceClick = useCallback((row: number, col: number) => {
-    console.log('[handlePieceClick] called. isProcessing:', isProcessing, 'hasMadeFirstMove:', hasMadeFirstMove, 'hintState:', gameState.hintState);
+    console.log('[handlePieceClick] called. isProcessing:', isProcessing, 'hasMadeFirstMove:', hasMadeFirstMove);
     
     // Don't allow clicks during processing or if game is over/paused
     if (isProcessing || gameState.isGameOver || gameState.isPaused) {
@@ -607,21 +588,11 @@ export function useBeachMatch() {
     }
     console.log('Piece clicked:', row, col);
 
-    // Immediately clear any visible hints and reset activity timer
+    // Reset activity timer (for hints) - but don't let it affect swapping
     setGameState(prevState => ({
       ...prevState,
-      noActivityStart: Date.now(),
-      hintState: {
-        ...prevState.hintState,
-        isVisible: false
-      }
+      noActivityStart: Date.now()
     }));
-
-    // Clear any existing hint timer to prevent interference
-    if (hintTimerRef.current) {
-      clearTimeout(hintTimerRef.current);
-      hintTimerRef.current = null;
-    }
 
     // Handle piece selection and swapping
     if (swappingPieces.length === 0) {
@@ -701,18 +672,17 @@ export function useBeachMatch() {
                   setGameState(prev => ({
                     ...prev,
                     grid: BeachMatchEngine.shuffleGrid(prev.grid),
-                    noActivityStart: Date.now(),
-                    hintState: {
-                      ...prev.hintState,
-                      isVisible: false
-                    }
+                    noActivityStart: Date.now()
                   }));
                   setIsShuffling(false);
                 }, 800);
               } else {
                 setGameOverCountdown(60);
-                setBoardFlash(true);
-                setTimeout(() => setBoardFlash(false), 2000);
+                // Don't trigger board flash for invalid moves during initial welcome flash
+                if (!boardFlash) {
+                  setBoardFlash(true);
+                  setTimeout(() => setBoardFlash(false), 2000);
+                }
               }
             }
             
@@ -735,7 +705,7 @@ export function useBeachMatch() {
         }));
       }
     }
-  }, [isProcessing, hasMadeFirstMove, setIsProcessing, setSwappingPieces, setGameState, setBoardFlash, setGameOverCountdown, setHasMadeFirstMove, activatePowerUp, processMatches, setIsShuffling]);
+  }, [isProcessing, hasMadeFirstMove, boardFlash, gameState.isGameOver, gameState.isPaused, swappingPieces, setIsProcessing, setSwappingPieces, setGameState, setBoardFlash, setGameOverCountdown, setHasMadeFirstMove, processMatches, setIsShuffling]);
 
   return {
     gameState,

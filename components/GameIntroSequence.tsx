@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 
 interface GameIntroSequenceProps {
@@ -17,12 +17,12 @@ export const GameIntroSequence: React.FC<GameIntroSequenceProps> = ({
   const didComplete = useRef(false);
   const [hasStarted, setHasStarted] = useState(false);
 
-  const safeComplete = () => {
+  const safeComplete = useCallback(() => {
     if (!didComplete.current) {
       didComplete.current = true;
       onComplete();
     }
-  };
+  }, [onComplete]);
 
   useEffect(() => {
     if (!isVisible) {
