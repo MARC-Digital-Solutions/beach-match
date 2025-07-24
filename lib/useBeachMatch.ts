@@ -97,18 +97,9 @@ export function useBeachMatch(gameStarted: boolean = false) {
     };
   }, []);
 
-  // Initialize countdown timer when game starts
+  // Always start the countdown at 60 when the game starts
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[DEBUG] useEffect (init countdown):', { gameStarted, gridLength: gameState.grid.length, gameOverCountdown });
-      if (!gameStarted) console.log('[DEBUG] gameStarted is false');
-      if (gameState.grid.length === 0) console.log('[DEBUG] grid is empty');
-      if (gameOverCountdown !== null) console.log('[DEBUG] gameOverCountdown is not null:', gameOverCountdown);
-    }
     if (gameStarted && gameState.grid.length > 0 && gameOverCountdown === null) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[DEBUG] Setting gameOverCountdown to 60');
-      }
       setGameOverCountdown(60);
     }
   }, [gameStarted, gameState.grid.length, gameOverCountdown]);
@@ -304,23 +295,14 @@ export function useBeachMatch(gameStarted: boolean = false) {
 
   // Always-on countdown timer for lives
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[DEBUG] useEffect (countdown tick):', { gameStarted, isGameOver: gameState.isGameOver, isPaused: gameState.isPaused, gameOverCountdown });
-    }
-    // Only run countdown when game is active (not over, not paused, and gameStarted)
     if (!gameStarted || gameState.isGameOver || gameState.isPaused) {
       return;
     }
-    // Don't start timer if countdown is not running or at 0
     if (gameOverCountdown === null || gameOverCountdown <= 0) {
       return;
     }
-    // Start the countdown timer using interval
     const interval = setInterval(() => {
       setGameOverCountdown(prev => {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[DEBUG] Countdown tick:', prev);
-        }
         if (prev === null || prev <= 0) {
           clearInterval(interval);
           return prev;
@@ -329,29 +311,24 @@ export function useBeachMatch(gameStarted: boolean = false) {
       });
     }, 1000);
     return () => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[DEBUG] Cleaning up interval');
-      }
       clearInterval(interval);
     };
   }, [gameStarted, gameState.isGameOver, gameState.isPaused, gameOverCountdown]);
 
-  // Handle countdown reaching zero
+  // When countdown reaches zero, always remove a life and reset countdown (unless game is over)
   useEffect(() => {
     if (gameOverCountdown === 0) {
-      console.log('[CountdownTimer] Countdown reached 0 - removing life');
-      // Remove a life and reset countdown
       setGameState(prev => {
         const newLives = Math.max(0, prev.lives - 1);
-        console.log('[CountdownTimer] Lives reduced from', prev.lives, 'to', newLives);
         return {
           ...prev,
           lives: newLives,
           isGameOver: newLives === 0
         };
       });
-      setGameOverCountdown(60);
-      setBoardHasFlashed(false); // trigger board flash
+      // Only reset countdown if game is not over
+      setGameOverCountdown(prev => (gameState.lives > 1 ? 60 : null));
+      setBoardHasFlashed(false);
     }
   }, [gameOverCountdown]);
 

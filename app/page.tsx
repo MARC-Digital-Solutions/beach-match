@@ -564,26 +564,6 @@ export default function HomePage() {
             </div>
 
             {/* Thin Banner Ad - Right Side */}
-            <div className="hidden lg:block w-32">
-              <div className="bg-gradient-to-b from-yellow-400 to-orange-500 rounded-lg p-3 shadow-lg border border-yellow-600 sticky top-32">
-                <div className="text-center">
-                  <div className="text-white font-bold text-sm mb-2">
-                    🎯 ADS
-                  </div>
-                  <div className="space-y-2">
-                    <div className="bg-white/90 rounded p-2">
-                      <div className="text-xs font-bold text-gray-800">YOUR AD HERE</div>
-                    </div>
-                    <div className="bg-white/90 rounded p-2">
-                      <div className="text-xs font-bold text-gray-800">CLICK FOR POINTS</div>
-                    </div>
-                    <div className="bg-white/90 rounded p-2">
-                      <div className="text-xs font-bold text-gray-800">+50 BONUS</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         )}
 

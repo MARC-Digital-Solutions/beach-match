@@ -116,10 +116,10 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
           </div>
         ))}
         {/* Beautiful Beach-Themed Game Container */}
-        <div className="bg-gradient-to-b from-blue-500 via-orange-400 to-red-500 p-6 rounded-xl shadow-2xl border-4 border-white/20">
+        <div className="bg-gradient-to-b from-blue-500 via-orange-400 to-red-500 p-2 sm:p-4 md:p-6 rounded-xl shadow-2xl border-4 border-white/20">
           {/* Frosted Glass Game Board */}
-          <div className={`bg-gradient-to-br from-white/20 via-white/10 to-transparent backdrop-blur-md rounded-xl p-4 border border-white/30 transition-all duration-500 ${isShuffling ? 'animate-shake' : ''}`} style={{position:'relative'}}>
-            <div className="relative grid grid-cols-8 gap-1">
+          <div className={`bg-gradient-to-br from-white/20 via-white/10 to-transparent backdrop-blur-md rounded-xl p-2 sm:p-3 md:p-4 border border-white/30 transition-all duration-500 ${isShuffling ? 'animate-shake' : ''}`} style={{position:'relative'}}>
+            <div className="relative grid grid-cols-8 gap-0.5 sm:gap-1">
               {grid.map((row, rowIndex) =>
                 row.map((piece, colIndex) => {
                   const isSwapping = swappingPieces.some(p => p.row === rowIndex && p.col === colIndex);
@@ -128,8 +128,8 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                     <button
                       key={`${rowIndex}-${colIndex}`}
                       className={`
-                        w-16 h-16 rounded-lg flex items-center justify-center
-                        text-5xl transition-all duration-200 transform
+                        w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-lg flex items-center justify-center
+                        text-2xl sm:text-3xl md:text-5xl transition-all duration-200 transform
                         border-2 shadow-lg font-bold relative
                         ${piece ? 'hover:scale-105 active:scale-95' : ''}
                         ${isPieceSelected(rowIndex, colIndex) 
@@ -155,7 +155,7 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                       {/* Hint star overlay - no scaling, just a flashing star */}
                       {isHinted && hintState?.isVisible && (
                         <span className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                          <span className="text-yellow-300 text-2xl animate-hint-star-glow animate-pulse drop-shadow-md">⭐️</span>
+                          <span className="text-yellow-300 text-lg sm:text-xl md:text-2xl animate-hint-star-glow animate-pulse drop-shadow-md">⭐️</span>
                         </span>
                       )}
                     </button>
@@ -165,32 +165,32 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
             </div>
           </div>
           {/* Game Score Card - Now positioned below the game board */}
-          <div className="mt-6 text-center relative">
-            <div className="text-white font-bold text-xl drop-shadow-2xl mb-2 tracking-wide">
+          <div className="mt-4 sm:mt-6 text-center relative">
+            <div className="text-white font-bold text-lg sm:text-xl drop-shadow-2xl mb-2 tracking-wide">
               BEACH MATCH
             </div>
-            <div className="flex justify-between items-center bg-black/20 rounded-lg p-4 border border-white/30 backdrop-blur-sm">
+            <div className="flex justify-between items-center bg-black/20 rounded-lg p-2 sm:p-4 border border-white/30 backdrop-blur-sm">
               {/* Score */}
               <div className="text-center">
-                <div className="text-yellow-300 text-lg font-bold drop-shadow-lg">
+                <div className="text-yellow-300 text-sm sm:text-lg font-bold drop-shadow-lg">
                   {score.toLocaleString()}
                 </div>
                 <div className="text-white/80 text-xs uppercase tracking-wider">Score</div>
               </div>
               {/* Lives */}
               <div className="text-center">
-                <div className="text-red-400 text-lg font-bold drop-shadow-lg">
+                <div className="text-red-400 text-sm sm:text-lg font-bold drop-shadow-lg">
                   {'❤️'.repeat(Math.max(0, lives))}
                   {lives === 0 && '💀'}
                 </div>
                 <div className="text-white/80 text-xs uppercase tracking-wider">Lives</div>
-                <div className="text-yellow-300/60 text-[10px] mt-1">
+                <div className="text-yellow-300/60 text-[8px] sm:text-[10px] mt-1">
                   🕐 Stream = Keep
                 </div>
               </div>
               {/* Combo */}
               <div className="text-center">
-                <div className="text-purple-300 text-lg font-bold drop-shadow-lg">
+                <div className="text-purple-300 text-sm sm:text-lg font-bold drop-shadow-lg">
                   {combo > 0 ? `${combo}x` : '-'}
                 </div>
                 <div className="text-white/80 text-xs uppercase tracking-wider">Combo</div>
@@ -199,7 +199,7 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
               <div className="text-center">
                 {typeof gameOverCountdown === 'number' && gameOverCountdown > 0 ? (
                   <>
-                    <div className="text-white text-2xl font-extrabold drop-shadow-lg animate-bounce">{gameOverCountdown}</div>
+                    <div className="text-white text-lg sm:text-2xl font-extrabold drop-shadow-lg animate-bounce">{gameOverCountdown}</div>
                     <div className="text-white text-xs uppercase tracking-wider font-bold animate-pulse">TIME LEFT</div>
                   </>
                 ) : (
@@ -213,7 +213,7 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
             {/* Processing Indicator */}
             {isProcessing && (
               <div className="absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center">
-                <div className="text-white text-lg font-bold animate-pulse">
+                <div className="text-white text-sm sm:text-lg font-bold animate-pulse">
                   🌊 Processing matches...
                 </div>
               </div>
