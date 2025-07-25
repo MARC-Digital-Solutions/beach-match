@@ -17,6 +17,9 @@ export class EngagementTracker {
     lastPlayDate: new Date()
   };
 
+  // Track sponsor clicks per session to limit them
+  private static sessionSponsorClicks: { [key: string]: boolean } = {};
+
   static loadEngagementData(): EngagementMetrics {
     if (typeof window === 'undefined') return this.engagementData;
 
@@ -84,23 +87,32 @@ export class EngagementTracker {
 
   static handleSponsorClick(gameState: BeachMatchState, type: 'ad' | 'video' | 'link'): BeachMatchState {
     const newState = { ...gameState };
+    
+    // Check if this sponsor type has already been clicked this session
+    if (this.sessionSponsorClicks[type]) {
+      console.log(`Sponsor ${type} already clicked this session - no bonus`);
+      return newState; // No bonus for repeat clicks
+    }
+    
+    // Mark this sponsor type as clicked for this session
+    this.sessionSponsorClicks[type] = true;
     this.engagementData.sponsorClicks++;
 
     switch (type) {
       case 'ad':
         newState.score += 50;
         newState.lives = Math.min(newState.lives + 1, 5);
-        console.log('Sponsor ad clicked: +50 points, +1 life');
+        console.log('Sponsor ad clicked: +50 points, +1 life (first time this session)');
         break;
       case 'video':
         newState.score += 100;
         newState.lives = Math.min(newState.lives + 2, 5);
-        console.log('Sponsor video watched: +100 points, +2 lives');
+        console.log('Sponsor video watched: +100 points, +2 lives (first time this session)');
         break;
       case 'link':
         newState.score += 75;
         newState.lives = Math.min(newState.lives + 1, 5);
-        console.log('Sponsor link visited: +75 points, +1 life');
+        console.log('Sponsor link visited: +75 points, +1 life (first time this session)');
         break;
     }
 
@@ -275,5 +287,11 @@ export class EngagementTracker {
     this.engagementData.sponsorClicks = 0;
     this.engagementData.totalMatches = 0;
     this.saveEngagementData();
+  }
+
+  // Reset session sponsor clicks for new game
+  static resetSessionSponsorClicks() {
+    this.sessionSponsorClicks = {};
+    console.log('Session sponsor clicks reset for new game');
   }
 } 

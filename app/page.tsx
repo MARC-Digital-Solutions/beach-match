@@ -7,6 +7,7 @@ import { SongQuizModal } from '@/components/SongQuizModal';
 import { GameTutorial } from '@/components/GameTutorial';
 import { Leaderboard } from '@/components/Leaderboard';
 import { WaveCrashEffect } from '@/components/WaveCrashEffect';
+import { PointsAnimation } from '@/components/PointsAnimation';
 import BeachMatchGame from '@/components/BeachMatchGame';
 import { useBeachMatch } from '@/lib/useBeachMatch';
 import { AudioManager } from '@/lib/audioManager';
@@ -72,6 +73,8 @@ export default function HomePage() {
     showQuizCelebration, // <-- add this
     showQuizWrong,
     clearingPieceIds,
+    pointsAnimations,
+    removePointsAnimation,
   } = useBeachMatch(gameStarted);
 
   // Handle intro sequence completion
@@ -406,6 +409,9 @@ export default function HomePage() {
               >
                 🎯 Click for +50 Points & +1 Life!
               </button>
+              <div className="text-black text-xs mt-2 opacity-75">
+                ⚠️ One-time bonus per session
+              </div>
             </div>
           </div>
         </div>
@@ -670,6 +676,17 @@ export default function HomePage() {
           isActive={showWaveCrash}
           onComplete={handleWaveCrashComplete}
         />
+
+        {/* Points Animations */}
+        {pointsAnimations.map((animation) => (
+          <PointsAnimation
+            key={animation.id}
+            points={animation.points}
+            x={animation.x}
+            y={animation.y}
+            onComplete={() => removePointsAnimation(animation.id)}
+          />
+        ))}
 
         {/* Leaderboard Modal */}
         <Leaderboard

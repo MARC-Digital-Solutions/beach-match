@@ -60,6 +60,12 @@ export function useBeachMatch(gameStarted: boolean = false) {
   const [showQuizCelebration, setShowQuizCelebration] = useState(false);
   const [showQuizWrong, setShowQuizWrong] = useState(false);
   const [clearingPieceIds, setClearingPieceIds] = useState<string[]>([]);
+  const [pointsAnimations, setPointsAnimations] = useState<Array<{
+    id: string;
+    points: number;
+    x: number;
+    y: number;
+  }>>([]);
 
   const gameStateRef = useRef(gameState);
   const hasMadeFirstMoveRef = useRef(hasMadeFirstMove);
@@ -100,10 +106,10 @@ export function useBeachMatch(gameStarted: boolean = false) {
     };
   }, [gameStarted]);
 
-  // Always start the countdown at 60 when the game starts
+  // Always start the countdown at 600 seconds (10 minutes) when the game starts
   useEffect(() => {
     if (gameStarted && gameState.grid.length > 0 && gameOverCountdown === null) {
-      setGameOverCountdown(60);
+      setGameOverCountdown(600); // 10 minutes = 600 seconds
     }
   }, [gameStarted, gameState.grid.length, gameOverCountdown]);
 
@@ -323,7 +329,7 @@ export function useBeachMatch(gameStarted: boolean = false) {
     if (gameOverCountdown === 0) {
       setGameState(prev => {
         const newLives = Math.max(0, prev.lives - 1);
-        if (newLives > 0) setGameOverCountdown(60);
+        if (newLives > 0) setGameOverCountdown(600); // Reset to 10 minutes
         else setGameOverCountdown(null);
         return {
           ...prev,
@@ -371,6 +377,10 @@ export function useBeachMatch(gameStarted: boolean = false) {
     console.log('🌊 Triggering wave crash!');
     setShowWaveCrash(true);
   }, [setShowWaveCrash]);
+
+  const removePointsAnimation = useCallback((animationId: string) => {
+    setPointsAnimations(prev => prev.filter(anim => anim.id !== animationId));
+  }, []);
 
   const processMatches = useCallback(async (grid: (GamePiece | null)[][]) => {
     console.log('[processMatches] Starting match processing');
@@ -429,6 +439,18 @@ export function useBeachMatch(gameStarted: boolean = false) {
       const finalScore = Math.floor(matchScore * eventMultiplier * comboMultiplier);
       totalScore += finalScore;
 
+      // Add points animation for this match
+      const animationId = `match-${Date.now()}-${Math.random()}`;
+      const centerX = window.innerWidth / 2 - 50; // Center with offset for text width
+      const centerY = window.innerHeight / 2 - 150; // Above center for better visibility
+      
+      setPointsAnimations(prev => [...prev, {
+        id: animationId,
+        points: finalScore,
+        x: centerX,
+        y: centerY
+      }]);
+
       // Remove matched pieces
       currentGrid = BeachMatchEngine.removeMatches(currentGrid, matches);
       
@@ -452,10 +474,13 @@ export function useBeachMatch(gameStarted: boolean = false) {
         noActivityStart: Date.now() // Reset activity timer
       };
 
-      // Check for piece-specific trivia triggers
+      // Check for piece-specific trivia triggers with delay
       const mostCommonPiece = [...matchedPieceTypes][0]; // Get first matched piece type
       if (mostCommonPiece && BeachMatchEngine.shouldTriggerQuiz(mostCommonPiece as any, newState.totalMatches)) {
-        triggerPieceSpecificQuiz(mostCommonPiece as any);
+        // Add delay so player can see the match and points
+        setTimeout(() => {
+          triggerPieceSpecificQuiz(mostCommonPiece as any);
+        }, 1200); // 1.2 second delay
       }
 
       // Check for wave crash event
@@ -594,6 +619,9 @@ export function useBeachMatch(gameStarted: boolean = false) {
     if (lifeTimerRef.current) {
       clearInterval(lifeTimerRef.current);
     }
+    
+    // Reset session sponsor clicks for new game
+    EngagementTracker.resetSessionSponsorClicks();
   }, [setGameState, setShowSongQuiz, setCurrentSongQuestion, setSongQuizTimer, setIsProcessing, setHasMadeFirstMove]);
 
   const pauseGame = useCallback(() => {
@@ -726,7 +754,7 @@ export function useBeachMatch(gameStarted: boolean = false) {
                   setIsShuffling(false);
                 }, 800);
               } else {
-                setGameOverCountdown(60);
+                setGameOverCountdown(600); // Reset to 10 minutes for invalid moves
                 // Don't trigger board flash for invalid moves during initial welcome flash
                 if (!boardFlash) {
                   setBoardFlash(true);
@@ -785,5 +813,7 @@ export function useBeachMatch(gameStarted: boolean = false) {
     showQuizCelebration,
     showQuizWrong,
     clearingPieceIds: clearingPieceIds,
+    pointsAnimations,
+    removePointsAnimation,
   };
 } 

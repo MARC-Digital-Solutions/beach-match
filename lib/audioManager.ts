@@ -27,7 +27,7 @@ export class AudioManager {
     '/WSBH ACA SHOT GUNS_15_WSBH_Cut12a_Aca.wav'
   ];
 
-  // Song quiz questions - Real 98.5 The Beach Info (fallback)
+  // Song quiz questions - Classic Hits from 1999 and older (filtered for family-friendly content)
   private static readonly SONG_QUIZ_QUESTIONS: SongQuizQuestion[] = [
     {
       id: 'song_1',
@@ -45,7 +45,7 @@ export class AudioManager {
       title: 'WSBH Station Promo',
       artist: '98.5 The Beach',
       lyricHint: 'Smooth radio announcement with station branding',
-      options: ["Space Coast&apos;s Hit Music", "Melbourne&apos;s #1 Music", "Florida&apos;s Beach Station", "Your Music, Your Station"],
+      options: ["Space Coast's Hit Music", "Melbourne's #1 Music", "Florida's Beach Station", "Your Music, Your Station"],
       correctAnswer: 0,
       type: 'song'
     },
@@ -58,6 +58,277 @@ export class AudioManager {
       options: ['Hit Music Station', 'Beach Radio Network', '98.5 The Beach', 'Space Coast Hits'],
       correctAnswer: 2,
       type: 'song'
+    },
+    // Classic Rock & 80s Hits (1999 and older)
+    {
+      id: 'song_4',
+      audioUrl: '',
+      title: 'Comfortably Numb',
+      artist: 'Pink Floyd',
+      lyricHint: 'Hello, is there anybody in there',
+      options: ['Pink Floyd', 'Led Zeppelin', 'The Who', 'The Doors'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_5',
+      audioUrl: '',
+      title: 'Dreams',
+      artist: 'Fleetwood Mac',
+      lyricHint: 'Thunder only happens when it\'s raining',
+      options: ['Fleetwood Mac', 'Stevie Nicks', 'The Eagles', 'Heart'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_6',
+      audioUrl: '',
+      title: 'Go Your Own Way',
+      artist: 'Fleetwood Mac',
+      lyricHint: 'Loving you isn\'t the right thing to do',
+      options: ['Fleetwood Mac', 'Stevie Nicks', 'The Eagles', 'Heart'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_7',
+      audioUrl: '',
+      title: 'Another Brick in the Wall',
+      artist: 'Pink Floyd',
+      lyricHint: 'We don\'t need no education',
+      options: ['Pink Floyd', 'Led Zeppelin', 'The Who', 'The Doors'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_8',
+      audioUrl: '',
+      title: 'Wish You Were Here',
+      artist: 'Pink Floyd',
+      lyricHint: 'So, so you think you can tell heaven from hell',
+      options: ['Pink Floyd', 'Led Zeppelin', 'The Who', 'The Doors'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_9',
+      audioUrl: '',
+      title: 'Hotel California',
+      artist: 'The Eagles',
+      lyricHint: 'Welcome to the Hotel California',
+      options: ['The Eagles', 'Fleetwood Mac', 'The Doobie Brothers', 'America'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_10',
+      audioUrl: '',
+      title: 'Take It Easy',
+      artist: 'The Eagles',
+      lyricHint: 'Well, I\'m running down the road trying to loosen my load',
+      options: ['The Eagles', 'Fleetwood Mac', 'The Doobie Brothers', 'America'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_11',
+      audioUrl: '',
+      title: 'Sweet Child O\' Mine',
+      artist: 'Guns N\' Roses',
+      lyricHint: 'She\'s got a smile that it seems to me',
+      options: ['Guns N\' Roses', 'Aerosmith', 'Bon Jovi', 'Def Leppard'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_12',
+      audioUrl: '',
+      title: 'Livin\' on a Prayer',
+      artist: 'Bon Jovi',
+      lyricHint: 'Tommy used to work on the docks',
+      options: ['Bon Jovi', 'Guns N\' Roses', 'Aerosmith', 'Def Leppard'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_13',
+      audioUrl: '',
+      title: 'Don\'t Stop Believin\'',
+      artist: 'Journey',
+      lyricHint: 'Just a small town girl, living in a lonely world',
+      options: ['Journey', 'Foreigner', 'REO Speedwagon', 'Styx'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_14',
+      audioUrl: '',
+      title: 'Every Breath You Take',
+      artist: 'The Police',
+      lyricHint: 'Every breath you take, every move you make',
+      options: ['The Police', 'The Cars', 'The Pretenders', 'The Clash'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_15',
+      audioUrl: '',
+      title: 'With or Without You',
+      artist: 'U2',
+      lyricHint: 'See the stone set in your eyes',
+      options: ['U2', 'The Police', 'The Cars', 'The Pretenders'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_16',
+      audioUrl: '',
+      title: 'Billie Jean',
+      artist: 'Michael Jackson',
+      lyricHint: 'Billie Jean is not my lover',
+      options: ['Michael Jackson', 'Prince', 'Madonna', 'Janet Jackson'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_17',
+      audioUrl: '',
+      title: 'Beat It',
+      artist: 'Michael Jackson',
+      lyricHint: 'They told him don\'t you ever come around here',
+      options: ['Michael Jackson', 'Prince', 'Madonna', 'Janet Jackson'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_18',
+      audioUrl: '',
+      title: 'Purple Rain',
+      artist: 'Prince',
+      lyricHint: 'I never meant to cause you any sorrow',
+      options: ['Prince', 'Michael Jackson', 'Madonna', 'Janet Jackson'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_19',
+      audioUrl: '',
+      title: 'When Doves Cry',
+      artist: 'Prince',
+      lyricHint: 'How can you just leave me standing',
+      options: ['Prince', 'Michael Jackson', 'Madonna', 'Janet Jackson'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_20',
+      audioUrl: '',
+      title: 'Like a Virgin',
+      artist: 'Madonna',
+      lyricHint: 'I made it through the wilderness',
+      options: ['Madonna', 'Cyndi Lauper', 'Tina Turner', 'Gloria Estefan'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_21',
+      audioUrl: '',
+      title: 'Material Girl',
+      artist: 'Madonna',
+      lyricHint: 'Some boys kiss me, some boys hug me',
+      options: ['Madonna', 'Cyndi Lauper', 'Tina Turner', 'Gloria Estefan'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_22',
+      audioUrl: '',
+      title: 'Girls Just Want to Have Fun',
+      artist: 'Cyndi Lauper',
+      lyricHint: 'I come home in the morning light',
+      options: ['Cyndi Lauper', 'Madonna', 'Tina Turner', 'Gloria Estefan'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_23',
+      audioUrl: '',
+      title: 'Time After Time',
+      artist: 'Cyndi Lauper',
+      lyricHint: 'If you\'re lost you can look and you will find me',
+      options: ['Cyndi Lauper', 'Madonna', 'Tina Turner', 'Gloria Estefan'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_24',
+      audioUrl: '',
+      title: 'What\'s Love Got to Do with It',
+      artist: 'Tina Turner',
+      lyricHint: 'What\'s love got to do, got to do with it',
+      options: ['Tina Turner', 'Gloria Estefan', 'Madonna', 'Cyndi Lauper'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_25',
+      audioUrl: '',
+      title: 'Simply the Best',
+      artist: 'Tina Turner',
+      lyricHint: 'You\'re simply the best, better than all the rest',
+      options: ['Tina Turner', 'Gloria Estefan', 'Madonna', 'Cyndi Lauper'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_26',
+      audioUrl: '',
+      title: 'Stairway to Heaven',
+      artist: 'Led Zeppelin',
+      lyricHint: 'There\'s a lady who\'s sure all that glitters is gold',
+      options: ['Led Zeppelin', 'Pink Floyd', 'The Who', 'The Doors'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_27',
+      audioUrl: '',
+      title: 'Bohemian Rhapsody',
+      artist: 'Queen',
+      lyricHint: 'Is this the real life, is this just fantasy',
+      options: ['Queen', 'Led Zeppelin', 'Pink Floyd', 'The Who'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_28',
+      audioUrl: '',
+      title: 'We Will Rock You',
+      artist: 'Queen',
+      lyricHint: 'Buddy, you\'re a boy, make a big noise',
+      options: ['Queen', 'Led Zeppelin', 'Pink Floyd', 'The Who'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_29',
+      audioUrl: '',
+      title: 'Baba O\'Riley',
+      artist: 'The Who',
+      lyricHint: 'Out here in the fields, I fight for my meals',
+      options: ['The Who', 'Led Zeppelin', 'Pink Floyd', 'The Doors'],
+      correctAnswer: 0,
+      type: 'song'
+    },
+    {
+      id: 'song_30',
+      audioUrl: '',
+      title: 'Light My Fire',
+      artist: 'The Doors',
+      lyricHint: 'You know that it would be untrue',
+      options: ['The Doors', 'Led Zeppelin', 'Pink Floyd', 'The Who'],
+      correctAnswer: 0,
+      type: 'song'
     }
   ];
 
@@ -69,41 +340,58 @@ export class AudioManager {
     return txt.value;
   }
 
-  // Fetch real music trivia question from SongIQ or similar API
+  // Content filter to remove inappropriate content
+  private static filterInappropriateContent(text: string): boolean {
+    const inappropriateWords = [
+      'cannabis', 'marijuana', 'weed', 'pot', 'drug', 'drugs',
+      'damn', 'hell', 'ass', 'bitch', 'slut', 'whore', 'fuck', 'shit', 'piss', 'crap'
+    ];
+    
+    const lowerText = text.toLowerCase();
+    return !inappropriateWords.some(word => lowerText.includes(word));
+  }
+
+  // Fetch curated classic hits trivia question (1999 and older only)
   static async fetchSongIQQuestion(): Promise<SongQuizQuestion | null> {
     try {
-      // Example: Use Open Trivia DB for music (replace with SongIQ if available)
-      const response = await fetch('https://opentdb.com/api.php?amount=1&category=12&type=multiple');
-      const data = await response.json();
-      if (data.results && data.results.length > 0) {
-        const q = data.results[0];
-        // Decode HTML entities in question and options
-        const decodedQuestion = AudioManager.decodeHtmlEntities(q.question);
-        const decodedOptions = q.incorrect_answers.concat(q.correct_answer).map(AudioManager.decodeHtmlEntities);
-        const correctIndex = decodedOptions.indexOf(AudioManager.decodeHtmlEntities(q.correct_answer));
-        return {
-          id: Date.now().toString(),
-          audioUrl: '',
-          type: 'song',
-          title: decodedQuestion,
-          artist: '',
-          lyricHint: decodedQuestion,
-          options: decodedOptions,
-          correctAnswer: correctIndex,
-        };
+      // Use a curated API or fallback to local questions
+      // For now, we'll use our local curated list of classic hits
+      const randomIndex = Math.floor(Math.random() * this.SONG_QUIZ_QUESTIONS.length);
+      const question = this.SONG_QUIZ_QUESTIONS[randomIndex];
+      
+      // Apply content filtering
+      if (!this.filterInappropriateContent(question.lyricHint) || 
+          !this.filterInappropriateContent(question.title) ||
+          !question.options.every(option => this.filterInappropriateContent(option))) {
+        // If any content is inappropriate, try another question
+        return this.fetchSongIQQuestion();
       }
+      
+      return question;
     } catch (e) {
-      console.warn('Failed to fetch SongIQ question, using fallback:', e);
+      console.warn('Failed to fetch song question, using fallback:', e);
     }
     return null;
   }
 
   static async getRandomSongQuestion(): Promise<SongQuizQuestion> {
+    // Always use our curated classic hits list (1999 and older)
     const apiQuestion = await this.fetchSongIQQuestion();
     if (apiQuestion) return apiQuestion;
-    // fallback to local
+    
+    // Fallback: get a random question from our curated list
     const randomIndex = Math.floor(Math.random() * this.SONG_QUIZ_QUESTIONS.length);
-    return this.SONG_QUIZ_QUESTIONS[randomIndex];
+    const question = this.SONG_QUIZ_QUESTIONS[randomIndex];
+    
+    // Apply content filtering as final safety check
+    if (this.filterInappropriateContent(question.lyricHint) && 
+        this.filterInappropriateContent(question.title) &&
+        question.options.every(option => this.filterInappropriateContent(option))) {
+      return question;
+    }
+    
+    // If filtered question is inappropriate, try another one
+    return this.getRandomSongQuestion();
   }
 
   // Space Coast quiz questions  

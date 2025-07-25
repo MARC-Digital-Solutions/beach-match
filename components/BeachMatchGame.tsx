@@ -208,7 +208,9 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
               <div className="text-center">
                 {typeof gameOverCountdown === 'number' && gameOverCountdown > 0 ? (
                   <>
-                    <div className="text-white text-lg sm:text-2xl font-extrabold drop-shadow-lg animate-bounce">{gameOverCountdown}</div>
+                    <div className="text-white text-lg sm:text-2xl font-extrabold drop-shadow-lg animate-bounce">
+                      {Math.floor(gameOverCountdown / 60)}:{(gameOverCountdown % 60).toString().padStart(2, '0')}
+                    </div>
                     <div className="text-white text-xs uppercase tracking-wider font-bold animate-pulse">TIME LEFT</div>
                   </>
                 ) : (
