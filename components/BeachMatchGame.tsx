@@ -21,6 +21,7 @@ interface BeachMatchGameProps {
   matchedRows?: number[];
   matchedCols?: number[];
   swappingPieces?: { row: number; col: number }[];
+  clearingPieceIds?: string[];
 }
 
 const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
@@ -38,7 +39,8 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
   boardFlash,
   matchedRows = [],
   matchedCols = [],
-  swappingPieces = []
+  swappingPieces = [],
+  clearingPieceIds = []
 }) => {
   // Remove this useEffect to prevent screen jerking
   // useEffect(() => {
@@ -73,24 +75,7 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
            (hintState.piece2?.row === row && hintState.piece2?.col === col);
   };
 
-  // Track which pieces are being cleared for animation
-  const [clearingPieceIds, setClearingPieceIds] = useState<string[]>([]);
-
-  // Detect which pieces are being cleared by comparing grid states
-  useEffect(() => {
-    // Find all nulls in the grid that were previously not null
-    // This is a simple approach; for more robust, pass matched piece IDs as a prop
-    // For now, just clear the animation state after a short delay
-    if (isProcessing) {
-      // When processing starts, clear any previous clearing state
-      setClearingPieceIds([]);
-    } else {
-      // When processing ends, clear the animation state after a short delay
-      const timeout = setTimeout(() => setClearingPieceIds([]), 250);
-      return () => clearTimeout(timeout);
-    }
-  }, [isProcessing, grid]);
-
+  // Remove local clearingPieceIds state and related logic
   // Helper to determine if a piece is being cleared
   const isClearing = (piece: GamePiece | null) => piece && clearingPieceIds.includes(piece.id);
 

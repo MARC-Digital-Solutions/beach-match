@@ -59,6 +59,7 @@ export function useBeachMatch(gameStarted: boolean = false) {
   const [hasMadeFirstMove, setHasMadeFirstMove] = useState(false);
   const [showQuizCelebration, setShowQuizCelebration] = useState(false);
   const [showQuizWrong, setShowQuizWrong] = useState(false);
+  const [clearingPieceIds, setClearingPieceIds] = useState<string[]>([]);
 
   const gameStateRef = useRef(gameState);
   const hasMadeFirstMoveRef = useRef(hasMadeFirstMove);
@@ -322,26 +323,17 @@ export function useBeachMatch(gameStarted: boolean = false) {
     if (gameOverCountdown === 0) {
       setGameState(prev => {
         const newLives = Math.max(0, prev.lives - 1);
+        if (newLives > 0) setGameOverCountdown(60);
+        else setGameOverCountdown(null);
         return {
           ...prev,
           lives: newLives,
           isGameOver: newLives === 0
         };
       });
-      // Only reset countdown if game is not over
-      setGameOverCountdown(prev => (gameState.lives > 1 ? 60 : null));
       setBoardHasFlashed(false);
     }
   }, [gameOverCountdown]);
-
-  // When player earns a life, reset countdown to 60 and flash board
-  useEffect(() => {
-    if (gameState.lives > 0 && gameOverCountdown !== 60) {
-      setGameOverCountdown(60);
-      setBoardHasFlashed(false);
-      // Don't clear board flash here - let the welcome flash complete
-    }
-  }, [gameState.lives, gameOverCountdown]);
 
   // --- Move these up so they are declared before use ---
   const triggerPieceSpecificQuiz = useCallback(async (pieceType: string) => {
@@ -397,6 +389,16 @@ export function useBeachMatch(gameStarted: boolean = false) {
         hasMatches = false;
         break;
       }
+
+      // Animation: collect all matched piece IDs
+      const matchedIds: string[] = [];
+      matches.forEach(match => {
+        match.pieces.forEach(piece => matchedIds.push(piece.id));
+      });
+      setClearingPieceIds(matchedIds);
+      // Wait for animation duration
+      await new Promise(resolve => setTimeout(resolve, 220));
+      setClearingPieceIds([]);
 
       // Trigger board flash for any 4- or 5-piece match
       const hasBigMatch = matches.some(match => match.pieces.length === 4 || match.pieces.length === 5);
@@ -486,7 +488,7 @@ export function useBeachMatch(gameStarted: boolean = false) {
     });
 
     setIsProcessing(false);
-  }, [setGameState, setBoardFlash, setIsProcessing, setIsShuffling, triggerPieceSpecificQuiz, triggerWaveCrash, boardFlash]);
+  }, [setGameState, setBoardFlash, setIsProcessing, setIsShuffling, triggerPieceSpecificQuiz, triggerWaveCrash, boardFlash, setClearingPieceIds]);
 
   const activatePowerUp = useCallback((powerUpType: any, row: number, col: number) => {
     setIsProcessing(true);
@@ -781,6 +783,7 @@ export function useBeachMatch(gameStarted: boolean = false) {
     matchedCols,
     swappingPieces,
     showQuizCelebration,
-    showQuizWrong
+    showQuizWrong,
+    clearingPieceIds: clearingPieceIds,
   };
 } 

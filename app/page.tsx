@@ -71,6 +71,7 @@ export default function HomePage() {
     swappingPieces,
     showQuizCelebration, // <-- add this
     showQuizWrong,
+    clearingPieceIds,
   } = useBeachMatch(gameStarted);
 
   // Handle intro sequence completion
@@ -511,6 +512,7 @@ export default function HomePage() {
                   matchedRows={matchedRows}
                   matchedCols={matchedCols}
                   swappingPieces={swappingPieces}
+                  clearingPieceIds={clearingPieceIds}
                 />
               </div>
 
