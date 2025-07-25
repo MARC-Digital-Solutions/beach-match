@@ -58,6 +58,7 @@ export function useBeachMatch(gameStarted: boolean = false) {
   // Track if the user has made their first move
   const [hasMadeFirstMove, setHasMadeFirstMove] = useState(false);
   const [showQuizCelebration, setShowQuizCelebration] = useState(false);
+  const [showQuizWrong, setShowQuizWrong] = useState(false);
 
   const gameStateRef = useRef(gameState);
   const hasMadeFirstMoveRef = useRef(hasMadeFirstMove);
@@ -71,12 +72,13 @@ export function useBeachMatch(gameStarted: boolean = false) {
   }
   // Initialize game systems and create initial grid on client only
   useEffect(() => {
-    // Initialize the grid only on the client to avoid hydration mismatch
-    setGameState(prevState => ({
-      ...prevState,
-      grid: BeachMatchEngine.createInitialGrid(),
-      noActivityStart: Date.now() // Start tracking inactivity immediately
-    }));
+    if (gameStarted) {
+      setGameState(prevState => ({
+        ...prevState,
+        grid: BeachMatchEngine.createInitialGrid(),
+        noActivityStart: Date.now() // Start tracking inactivity immediately
+      }));
+    }
 
     EngagementTracker.loadEngagementData();
     EventManager.initializeEvents();
@@ -95,7 +97,7 @@ export function useBeachMatch(gameStarted: boolean = false) {
         clearInterval(lifeTimerRef.current);
       }
     };
-  }, []);
+  }, [gameStarted]);
 
   // Always start the countdown at 60 when the game starts
   useEffect(() => {
@@ -538,10 +540,14 @@ export function useBeachMatch(gameStarted: boolean = false) {
       return;
     }
 
-    AudioManager.stopQuizClip();
-    setShowSongQuiz(false);
-    setCurrentSongQuestion(null);
-    setSongQuizTimer(30);
+    setShowQuizWrong(true);
+    setTimeout(() => {
+      setShowQuizWrong(false);
+      AudioManager.stopQuizClip();
+      setShowSongQuiz(false);
+      setCurrentSongQuestion(null);
+      setSongQuizTimer(30);
+    }, 1000);
   }, [currentSongQuestion, setGameState, setShowSongQuiz, setCurrentSongQuestion, setSongQuizTimer]);
 
   const handleSponsorClick = useCallback((type: 'ad' | 'video' | 'link') => {
@@ -774,6 +780,7 @@ export function useBeachMatch(gameStarted: boolean = false) {
     matchedRows,
     matchedCols,
     swappingPieces,
-    showQuizCelebration
+    showQuizCelebration,
+    showQuizWrong
   };
 } 

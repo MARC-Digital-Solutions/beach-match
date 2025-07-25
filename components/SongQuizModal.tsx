@@ -9,6 +9,7 @@ interface SongQuizModalProps {
   onAnswer: (selectedAnswer: number) => void;
   onClose: () => void;
   showCelebration?: boolean;
+  showWrong?: boolean;
 }
 
 export const SongQuizModal: React.FC<SongQuizModalProps> = ({
@@ -17,7 +18,8 @@ export const SongQuizModal: React.FC<SongQuizModalProps> = ({
   timeRemaining,
   onAnswer,
   onClose,
-  showCelebration = false
+  showCelebration = false,
+  showWrong = false
 }) => {
   // Auto-play song clip when modal opens for song questions
   useEffect(() => {
@@ -175,6 +177,21 @@ export const SongQuizModal: React.FC<SongQuizModalProps> = ({
               <div className="absolute right-1/4 top-1/3 text-4xl animate-confetti">🎊</div>
               <div className="absolute left-1/3 bottom-1/4 text-4xl animate-confetti">🎉</div>
               <div className="absolute right-1/3 bottom-1/3 text-4xl animate-confetti">🎉</div>
+            </div>
+          </div>
+        )}
+        {/* Wrong Animation Overlay */}
+        {showWrong && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-50 pointer-events-none animate-fade-in-fast">
+            <div className="text-7xl mb-4 animate-shake text-red-400">❌</div>
+            <div className="text-3xl font-extrabold text-red-400 drop-shadow-lg animate-pulse">Wrong!</div>
+            <div className="text-lg text-white mt-2 animate-fade-in">No bonus this time</div>
+            <div className="absolute inset-0 pointer-events-none">
+              {/* Subtle red burst using emoji */}
+              <div className="absolute left-1/4 top-1/4 text-4xl animate-confetti text-red-300">💥</div>
+              <div className="absolute right-1/4 top-1/3 text-4xl animate-confetti text-red-300">💥</div>
+              <div className="absolute left-1/3 bottom-1/4 text-4xl animate-confetti text-red-400">❌</div>
+              <div className="absolute right-1/3 bottom-1/3 text-4xl animate-confetti text-red-400">❌</div>
             </div>
           </div>
         )}

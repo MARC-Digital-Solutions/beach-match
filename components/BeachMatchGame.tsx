@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { GamePiece } from '@/lib/types';
 
 interface BeachMatchGameProps {
@@ -73,6 +73,27 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
            (hintState.piece2?.row === row && hintState.piece2?.col === col);
   };
 
+  // Track which pieces are being cleared for animation
+  const [clearingPieceIds, setClearingPieceIds] = useState<string[]>([]);
+
+  // Detect which pieces are being cleared by comparing grid states
+  useEffect(() => {
+    // Find all nulls in the grid that were previously not null
+    // This is a simple approach; for more robust, pass matched piece IDs as a prop
+    // For now, just clear the animation state after a short delay
+    if (isProcessing) {
+      // When processing starts, clear any previous clearing state
+      setClearingPieceIds([]);
+    } else {
+      // When processing ends, clear the animation state after a short delay
+      const timeout = setTimeout(() => setClearingPieceIds([]), 250);
+      return () => clearTimeout(timeout);
+    }
+  }, [isProcessing, grid]);
+
+  // Helper to determine if a piece is being cleared
+  const isClearing = (piece: GamePiece | null) => piece && clearingPieceIds.includes(piece.id);
+
   if (!grid || grid.length === 0) {
     return (
       <div className="w-full max-w-2xl mx-auto">
@@ -124,6 +145,8 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                 row.map((piece, colIndex) => {
                   const isSwapping = swappingPieces.some(p => p.row === rowIndex && p.col === colIndex);
                   const isHinted = isPieceHinted(rowIndex, colIndex);
+                  // Add animation class if piece is being cleared
+                  const animClass = isClearing(piece) ? 'animate-piece-clear' : '';
                   return (
                     <button
                       key={`${rowIndex}-${colIndex}`}
@@ -141,6 +164,7 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                         ${isHinted ? 'ring-4 ring-yellow-300 animate-hint-glow' : ''}
                         ${isProcessing ? 'pointer-events-none opacity-70' : ''}
                         ${isSwapping ? 'piece-swap animate-bounce' : ''}
+                        ${animClass}
                       `}
                       onClick={() => {
                         onPieceClick(rowIndex, colIndex);
