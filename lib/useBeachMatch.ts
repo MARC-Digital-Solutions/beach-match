@@ -649,6 +649,76 @@ export function useBeachMatch(gameStarted: boolean = false) {
   const engagementData = EngagementTracker.getEngagementData();
 
   // --- Now use them in handlePieceClick ---
+  const handleSwipe = useCallback((fromRow: number, fromCol: number, direction: 'up' | 'down' | 'left' | 'right') => {
+    if (isProcessing || gameState.isGameOver || gameState.isPaused) return;
+
+    // Calculate target position based on swipe direction
+    let targetRow = fromRow;
+    let targetCol = fromCol;
+
+    switch (direction) {
+      case 'up':
+        targetRow = Math.max(0, fromRow - 1);
+        break;
+      case 'down':
+        targetRow = Math.min(7, fromRow + 1);
+        break;
+      case 'left':
+        targetCol = Math.max(0, fromCol - 1);
+        break;
+      case 'right':
+        targetCol = Math.min(7, fromCol + 1);
+        break;
+    }
+
+    // Only proceed if we're moving to a different position
+    if (targetRow === fromRow && targetCol === fromCol) return;
+
+    // Check if target position has a piece
+    const targetPiece = gameState.grid[targetRow]?.[targetCol];
+    if (!targetPiece) return;
+
+    // Perform the swap
+    setIsProcessing(true);
+    const newGrid = [...gameState.grid.map(row => [...row])];
+    
+    // Swap pieces
+    const temp = newGrid[fromRow][fromCol];
+    newGrid[fromRow][fromCol] = newGrid[targetRow][targetCol];
+    newGrid[targetRow][targetCol] = temp;
+
+    // Check for matches
+    setTimeout(() => {
+      const matches = BeachMatchEngine.findMatches(newGrid);
+      if (matches.length > 0) {
+        // Valid swap - process matches
+        processMatches(newGrid);
+      } else {
+        // Invalid swap - revert
+        const revertedGrid = [...gameState.grid.map(row => [...row])];
+        setGameState(prev => ({
+          ...prev,
+          grid: revertedGrid,
+          selectedPiece: null
+        }));
+        setIsProcessing(false);
+        
+        // Check for game over after invalid move
+        if (!BeachMatchEngine.hasValidMoves(revertedGrid)) {
+          setIsShuffling(true);
+          setTimeout(() => {
+            setGameState(prev => ({
+              ...prev,
+              grid: BeachMatchEngine.shuffleGrid(prev.grid),
+              noActivityStart: Date.now()
+            }));
+            setIsShuffling(false);
+          }, 800);
+        }
+      }
+    }, 200);
+  }, [isProcessing, gameState, processMatches, setIsProcessing, setIsShuffling]);
+
   const handlePieceClick = useCallback((row: number, col: number) => {
     console.log('[handlePieceClick] called. isProcessing:', isProcessing, 'hasMadeFirstMove:', hasMadeFirstMove);
     
@@ -815,5 +885,6 @@ export function useBeachMatch(gameStarted: boolean = false) {
     clearingPieceIds: clearingPieceIds,
     pointsAnimations,
     removePointsAnimation,
+    handleSwipe,
   };
 } 

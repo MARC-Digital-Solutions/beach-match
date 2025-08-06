@@ -75,6 +75,7 @@ export default function HomePage() {
     clearingPieceIds,
     pointsAnimations,
     removePointsAnimation,
+    handleSwipe,
   } = useBeachMatch(gameStarted);
 
   // Handle intro sequence completion
@@ -503,23 +504,24 @@ export default function HomePage() {
 
               {/* Beach Match Game */}
               <div className="mb-6">
-                <BeachMatchGame
-                  grid={gameState.grid}
-                  selectedPiece={gameState.selectedPiece}
-                  onPieceClick={handlePieceClick}
-                  isProcessing={isProcessing}
-                  score={gameState.score}
-                  lives={gameState.lives}
-                  combo={gameState.combo}
-                  streamTime={gameState.streamTime}
-                  hintState={gameState.hintState}
-                  gameOverCountdown={gameOverCountdown} // <-- pass countdown
-                  boardFlash={boardFlash} // <-- pass boardFlash
-                  matchedRows={matchedRows}
-                  matchedCols={matchedCols}
-                  swappingPieces={swappingPieces}
-                  clearingPieceIds={clearingPieceIds}
-                />
+                              <BeachMatchGame
+                grid={gameState.grid}
+                selectedPiece={gameState.selectedPiece}
+                onPieceClick={handlePieceClick}
+                onSwipe={handleSwipe}
+                isProcessing={isProcessing}
+                score={gameState.score}
+                lives={gameState.lives}
+                combo={gameState.combo}
+                streamTime={gameState.streamTime}
+                hintState={gameState.hintState}
+                gameOverCountdown={gameOverCountdown} // <-- pass countdown
+                boardFlash={boardFlash} // <-- pass boardFlash
+                matchedRows={matchedRows}
+                matchedCols={matchedCols}
+                swappingPieces={swappingPieces}
+                clearingPieceIds={clearingPieceIds}
+              />
               </div>
 
               {/* Game Rules Section - moved here */}

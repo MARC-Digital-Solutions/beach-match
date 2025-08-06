@@ -9,7 +9,7 @@ export class BeachMatchEngine {
   private static lastSongQuizTime: number = Date.now();
   private static lastSpaceQuizTime: number = Date.now();
   private static lastBeachQuizTime: number = Date.now();
-  private static readonly QUIZ_COOLDOWN = 30 * 1000; // 30 seconds in milliseconds
+  private static readonly QUIZ_COOLDOWN = 120 * 1000; // 2 minutes in milliseconds
   
   // Hint system
   private static readonly HINT_DELAY = 3000; // 3 seconds (reduced from 6)
@@ -366,11 +366,10 @@ export class BeachMatchEngine {
         return 'song';
       case 'rocket':
         return 'space_coast';
-      case 'beach_ball':
-      case 'boat':
+      case 'palm_tree':
         return 'florida_beach';
       default:
-        return null; // palm_tree doesn't trigger quiz
+        return null; // beach_ball and boat don't trigger trivia
     }
   }
 
@@ -402,7 +401,7 @@ export class BeachMatchEngine {
     
     // Only trigger if enough time has passed AND random chance succeeds
     if (timeSinceLastQuiz >= this.QUIZ_COOLDOWN) {
-      if (Math.random() < 0.5) { // 50% chance when cooldown is ready
+      if (Math.random() < 0.3) { // 30% chance when cooldown is ready
         // Update the appropriate timer
         switch (quizType) {
           case 'song':
@@ -416,7 +415,7 @@ export class BeachMatchEngine {
             break;
         }
         
-        console.log(`${quizType} quiz triggered for ${pieceType}! Next quiz available in 30 seconds.`);
+        console.log(`${quizType} quiz triggered for ${pieceType}! Next quiz available in 2 minutes.`);
         return true;
       }
     }

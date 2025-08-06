@@ -471,6 +471,86 @@ export class AudioManager {
       correctAnswer: 0,
       type: 'florida_beach',
       hint: 'Very slow to protect beachgoers and wildlife'
+    },
+    {
+      id: 'beach_6',
+      question: 'What is Florida\'s state flower?',
+      options: ['Orange Blossom', 'Rose', 'Sunflower', 'Tulip'],
+      correctAnswer: 0,
+      type: 'florida_beach',
+      hint: 'It\'s named after the state\'s famous citrus fruit'
+    },
+    {
+      id: 'beach_7',
+      question: 'Which river forms the eastern border of Brevard County?',
+      options: ['St. Johns River', 'Indian River', 'Banana River', 'Intracoastal Waterway'],
+      correctAnswer: 1,
+      type: 'florida_beach',
+      hint: 'This lagoon runs along Florida\'s east coast'
+    },
+    {
+      id: 'beach_8',
+      question: 'What is the largest lake in Florida?',
+      options: ['Lake Okeechobee', 'Lake George', 'Lake Kissimmee', 'Lake Apopka'],
+      correctAnswer: 0,
+      type: 'florida_beach',
+      hint: 'Known as Florida\'s "inland sea"'
+    },
+    {
+      id: 'beach_9',
+      question: 'Which Florida animal is known as the "swamp ghost"?',
+      options: ['Alligator', 'Florida Panther', 'Black Bear', 'White-tailed Deer'],
+      correctAnswer: 1,
+      type: 'florida_beach',
+      hint: 'This endangered big cat is Florida\'s state animal'
+    },
+    {
+      id: 'beach_10',
+      question: 'What is the nickname for the Space Coast region?',
+      options: ['The Gold Coast', 'The Treasure Coast', 'The Space Coast', 'The Nature Coast'],
+      correctAnswer: 2,
+      type: 'florida_beach',
+      hint: 'Named for the space industry centered around Kennedy Space Center'
+    },
+    {
+      id: 'beach_11',
+      question: 'Which beach in Brevard County is known for surfing?',
+      options: ['Cocoa Beach', 'Melbourne Beach', 'Satellite Beach', 'All of the above'],
+      correctAnswer: 3,
+      type: 'florida_beach',
+      hint: 'The Space Coast has several popular surfing spots'
+    },
+    {
+      id: 'beach_12',
+      question: 'What is Florida\'s state bird?',
+      options: ['Mockingbird', 'Northern Mockingbird', 'Florida Scrub Jay', 'Northern Cardinal'],
+      correctAnswer: 0,
+      type: 'florida_beach',
+      hint: 'This bird is known for its ability to mimic other birds'
+    },
+    {
+      id: 'beach_13',
+      question: 'Which Florida county is home to the Kennedy Space Center?',
+      options: ['Orange County', 'Brevard County', 'Volusia County', 'Seminole County'],
+      correctAnswer: 1,
+      type: 'florida_beach',
+      hint: 'This county is on Florida\'s east coast'
+    },
+    {
+      id: 'beach_14',
+      question: 'What is the average water temperature of the Atlantic Ocean off Florida\'s coast?',
+      options: ['60-70°F', '70-80°F', '80-90°F', '90-100°F'],
+      correctAnswer: 1,
+      type: 'florida_beach',
+      hint: 'Warm enough for swimming year-round'
+    },
+    {
+      id: 'beach_15',
+      question: 'Which Florida city is known as the "Surfing Capital of the East Coast"?',
+      options: ['Cocoa Beach', 'Daytona Beach', 'Miami Beach', 'Jacksonville Beach'],
+      correctAnswer: 0,
+      type: 'florida_beach',
+      hint: 'Home to the famous Ron Jon Surf Shop'
     }
   ];
 
@@ -595,9 +675,31 @@ export class AudioManager {
     return this.SPACE_COAST_QUESTIONS[randomIndex];
   }
 
+  private static lastFloridaQuestions: string[] = [];
+
   static getRandomFloridaBeachQuestion(): FloridaBeachQuestion {
-    const randomIndex = Math.floor(Math.random() * this.FLORIDA_BEACH_QUESTIONS.length);
-    return this.FLORIDA_BEACH_QUESTIONS[randomIndex];
+    // Filter out recently used questions
+    const availableQuestions = this.FLORIDA_BEACH_QUESTIONS.filter(
+      q => !this.lastFloridaQuestions.includes(q.id)
+    );
+    
+    // If we've used all questions, reset the history
+    if (availableQuestions.length === 0) {
+      this.lastFloridaQuestions = [];
+      return this.FLORIDA_BEACH_QUESTIONS[Math.floor(Math.random() * this.FLORIDA_BEACH_QUESTIONS.length)];
+    }
+    
+    // Pick a random question from available ones
+    const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+    const selectedQuestion = availableQuestions[randomIndex];
+    
+    // Add to recently used list (keep last 5)
+    this.lastFloridaQuestions.push(selectedQuestion.id);
+    if (this.lastFloridaQuestions.length > 5) {
+      this.lastFloridaQuestions.shift();
+    }
+    
+    return selectedQuestion;
   }
 
   static async getQuestionByType(type: 'song' | 'space_coast' | 'florida_beach'): Promise<QuizQuestion> {

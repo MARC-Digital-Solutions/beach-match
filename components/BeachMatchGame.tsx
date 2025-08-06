@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { GamePiece } from '@/lib/types';
+import { SwipeIndicator } from './SwipeIndicator';
 
 interface BeachMatchGameProps {
   grid: (GamePiece | null)[][];
   selectedPiece: { row: number; col: number } | null;
   onPieceClick: (row: number, col: number) => void;
+  onSwipe: (fromRow: number, fromCol: number, direction: 'up' | 'down' | 'left' | 'right') => void;
   isProcessing: boolean;
   score: number;
   lives: number;
@@ -28,6 +30,7 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
   grid,
   selectedPiece,
   onPieceClick,
+  onSwipe,
   isProcessing,
   score,
   lives,
@@ -42,10 +45,76 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
   swappingPieces = [],
   clearingPieceIds = []
 }) => {
-  // Remove this useEffect to prevent screen jerking
-  // useEffect(() => {
-  //   window.scrollTo(0, 0);
-  // }, []);
+  // Swipe detection state
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
+  const [swipeStartPiece, setSwipeStartPiece] = useState<{ row: number; col: number } | null>(null);
+  const [swipeIndicators, setSwipeIndicators] = useState<Array<{
+    id: string;
+    direction: 'up' | 'down' | 'left' | 'right';
+    x: number;
+    y: number;
+  }>>([]);
+
+  // Minimum swipe distance (in pixels)
+  const minSwipeDistance = 50;
+  // Swipe detection functions
+  const onTouchStart = (e: React.TouchEvent, row: number, col: number) => {
+    const touch = e.touches[0];
+    setTouchStart({ x: touch.clientX, y: touch.clientY });
+    setSwipeStartPiece({ row, col });
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (!touchStart) return;
+    const touch = e.touches[0];
+    setTouchEnd({ x: touch.clientX, y: touch.clientY });
+  };
+
+  const removeSwipeIndicator = (id: string) => {
+    setSwipeIndicators(prev => prev.filter(indicator => indicator.id !== id));
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd || !swipeStartPiece) {
+      setTouchStart(null);
+      setTouchEnd(null);
+      setSwipeStartPiece(null);
+      return;
+    }
+
+    const distanceX = touchStart.x - touchEnd.x;
+    const distanceY = touchStart.y - touchEnd.y;
+    const isHorizontalSwipe = Math.abs(distanceX) > Math.abs(distanceY);
+    const isLongEnough = Math.abs(distanceX) > minSwipeDistance || Math.abs(distanceY) > minSwipeDistance;
+
+    if (isLongEnough) {
+      let direction: 'up' | 'down' | 'left' | 'right';
+      
+      if (isHorizontalSwipe) {
+        direction = distanceX > 0 ? 'left' : 'right';
+      } else {
+        direction = distanceY > 0 ? 'up' : 'down';
+      }
+
+      // Add swipe indicator
+      const indicatorId = `swipe-${Date.now()}-${Math.random()}`;
+      setSwipeIndicators(prev => [...prev, {
+        id: indicatorId,
+        direction,
+        x: touchStart.x,
+        y: touchStart.y
+      }]);
+
+      // Call the swipe handler
+      onSwipe(swipeStartPiece.row, swipeStartPiece.col, direction);
+    }
+
+    // Reset touch state
+    setTouchStart(null);
+    setTouchEnd(null);
+    setSwipeStartPiece(null);
+  };
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -108,6 +177,16 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
   // Main return for the game UI
   return (
     <div className="w-full max-w-2xl mx-auto relative overflow-visible">
+      {/* Swipe Indicators */}
+      {swipeIndicators.map((indicator) => (
+        <SwipeIndicator
+          key={indicator.id}
+          direction={indicator.direction}
+          x={indicator.x}
+          y={indicator.y}
+          onComplete={() => removeSwipeIndicator(indicator.id)}
+        />
+      ))}
       <div style={{position:'relative'}}>
         {/* Swipe Row Overlays */}
         {matchedRows.map(rowIdx => (
@@ -138,7 +217,7 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                       className={`
                         w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-lg flex items-center justify-center
                         text-2xl sm:text-3xl md:text-5xl transition-all duration-200 transform
-                        border-2 shadow-lg font-bold relative
+                        border-2 shadow-lg font-bold relative touch-manipulation
                         ${piece ? 'hover:scale-105 active:scale-95' : ''}
                         ${isPieceSelected(rowIndex, colIndex) 
                           ? 'bg-yellow-300 border-yellow-500 ring-4 ring-yellow-400/50 scale-110' 
@@ -151,8 +230,14 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                         ${isSwapping ? 'piece-swap animate-bounce' : ''}
                         ${animClass}
                       `}
+                      onTouchStart={(e) => onTouchStart(e, rowIndex, colIndex)}
+                      onTouchMove={onTouchMove}
+                      onTouchEnd={onTouchEnd}
                       onClick={() => {
-                        onPieceClick(rowIndex, colIndex);
+                        // Fallback for desktop/mouse users
+                        if (!touchStart) {
+                          onPieceClick(rowIndex, colIndex);
+                        }
                       }}
                       disabled={!piece || isProcessing}
                     >
