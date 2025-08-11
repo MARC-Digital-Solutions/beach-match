@@ -199,4 +199,49 @@ button:focus-visible {
 }
 .animate-piece-clear {
   animation: pieceClearFade 0.22s cubic-bezier(0.4,0,0.2,1) forwards;
+}
+
+/* Enhanced swipe animations */
+@keyframes swipe-preview-source {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 #3b82f6; }
+  50% { transform: scale(1.05); box-shadow: 0 0 20px 4px #3b82f6; }
+  100% { transform: scale(1.02); box-shadow: 0 0 15px 3px #3b82f6; }
+}
+
+@keyframes swipe-preview-target {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 #10b981; }
+  50% { transform: scale(1.08); box-shadow: 0 0 25px 5px #10b981; }
+  100% { transform: scale(1.05); box-shadow: 0 0 20px 4px #10b981; }
+}
+
+.animate-swipe-preview-source {
+  animation: swipe-preview-source 0.3s ease-out forwards;
+}
+
+.animate-swipe-preview-target {
+  animation: swipe-preview-target 0.3s ease-out forwards;
+}
+
+/* Smooth swipe direction indicator */
+@keyframes swipe-direction-bounce {
+  0%, 100% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.1) translateY(-2px); }
+}
+
+.animate-swipe-direction {
+  animation: swipe-direction-bounce 0.4s ease-in-out infinite;
+}
+
+/* Responsive touch feedback */
+@keyframes touch-ripple {
+  0% { transform: scale(0); opacity: 1; }
+  100% { transform: scale(4); opacity: 0; }
+}
+
+.touch-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background-color: rgba(59, 130, 246, 0.3);
+  animation: touch-ripple 0.6s linear;
+  pointer-events: none;
 } 

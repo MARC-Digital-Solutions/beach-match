@@ -45,75 +45,118 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
   swappingPieces = [],
   clearingPieceIds = []
 }) => {
-  // Swipe detection state
-  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
-  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
+  // Enhanced swipe detection state
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
+  const [currentTouch, setCurrentTouch] = useState<{ x: number; y: number } | null>(null);
   const [swipeStartPiece, setSwipeStartPiece] = useState<{ row: number; col: number } | null>(null);
+  const [swipePreview, setSwipePreview] = useState<{
+    fromRow: number;
+    fromCol: number;
+    toRow: number;
+    toCol: number;
+    direction: 'up' | 'down' | 'left' | 'right';
+  } | null>(null);
   const [swipeIndicators, setSwipeIndicators] = useState<Array<{
     id: string;
     direction: 'up' | 'down' | 'left' | 'right';
     x: number;
     y: number;
   }>>([]);
+  const [hasTriggeredSwipe, setHasTriggeredSwipe] = useState(false);
 
-  // Minimum swipe distance (in pixels)
-  const minSwipeDistance = 50;
-  // Swipe detection functions
+  // Optimized swipe sensitivity
+  const minSwipeDistance = 30; // Reduced for more responsive detection
+  const swipeThreshold = 25; // Distance before showing preview
+  const maxSwipeTime = 800; // Maximum time for a swipe gesture (ms)
+  // Enhanced continuous swipe detection functions
   const onTouchStart = (e: React.TouchEvent, row: number, col: number) => {
+    e.preventDefault(); // Prevent scrolling
     const touch = e.touches[0];
-    setTouchStart({ x: touch.clientX, y: touch.clientY });
+    const startTime = Date.now();
+    
+    setTouchStart({ x: touch.clientX, y: touch.clientY, time: startTime });
+    setCurrentTouch({ x: touch.clientX, y: touch.clientY });
     setSwipeStartPiece({ row, col });
+    setSwipePreview(null);
+    setHasTriggeredSwipe(false);
+    
+    // Clear any existing swipe indicators
+    setSwipeIndicators([]);
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
-    if (!touchStart) return;
+    if (!touchStart || !swipeStartPiece || hasTriggeredSwipe) return;
+    e.preventDefault();
+    
     const touch = e.touches[0];
-    setTouchEnd({ x: touch.clientX, y: touch.clientY });
+    const currentX = touch.clientX;
+    const currentY = touch.clientY;
+    
+    setCurrentTouch({ x: currentX, y: currentY });
+    
+    // Calculate swipe distance and direction
+    const deltaX = currentX - touchStart.x;
+    const deltaY = currentY - touchStart.y;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    
+    // Check if we've moved enough to show preview
+    if (distance >= swipeThreshold) {
+      const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY);
+      let direction: 'up' | 'down' | 'left' | 'right';
+      let targetRow = swipeStartPiece.row;
+      let targetCol = swipeStartPiece.col;
+      
+      if (isHorizontal) {
+        direction = deltaX > 0 ? 'right' : 'left';
+        targetCol = direction === 'right' 
+          ? Math.min(7, swipeStartPiece.col + 1)
+          : Math.max(0, swipeStartPiece.col - 1);
+      } else {
+        direction = deltaY > 0 ? 'down' : 'up';
+        targetRow = direction === 'down' 
+          ? Math.min(7, swipeStartPiece.row + 1)
+          : Math.max(0, swipeStartPiece.row - 1);
+      }
+      
+      // Update preview state
+      setSwipePreview({
+        fromRow: swipeStartPiece.row,
+        fromCol: swipeStartPiece.col,
+        toRow: targetRow,
+        toCol: targetCol,
+        direction
+      });
+      
+      // Trigger swipe if we've moved far enough
+      if (distance >= minSwipeDistance && !hasTriggeredSwipe) {
+        setHasTriggeredSwipe(true);
+        
+        // Add visual feedback
+        const indicatorId = `swipe-${Date.now()}-${Math.random()}`;
+        setSwipeIndicators(prev => [...prev, {
+          id: indicatorId,
+          direction,
+          x: touchStart.x,
+          y: touchStart.y
+        }]);
+        
+        // Trigger the swipe action immediately
+        onSwipe(swipeStartPiece.row, swipeStartPiece.col, direction);
+      }
+    }
+  };
+
+  const onTouchEnd = () => {
+    // Clean up all touch state
+    setTouchStart(null);
+    setCurrentTouch(null);
+    setSwipeStartPiece(null);
+    setSwipePreview(null);
+    setHasTriggeredSwipe(false);
   };
 
   const removeSwipeIndicator = (id: string) => {
     setSwipeIndicators(prev => prev.filter(indicator => indicator.id !== id));
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd || !swipeStartPiece) {
-      setTouchStart(null);
-      setTouchEnd(null);
-      setSwipeStartPiece(null);
-      return;
-    }
-
-    const distanceX = touchStart.x - touchEnd.x;
-    const distanceY = touchStart.y - touchEnd.y;
-    const isHorizontalSwipe = Math.abs(distanceX) > Math.abs(distanceY);
-    const isLongEnough = Math.abs(distanceX) > minSwipeDistance || Math.abs(distanceY) > minSwipeDistance;
-
-    if (isLongEnough) {
-      let direction: 'up' | 'down' | 'left' | 'right';
-      
-      if (isHorizontalSwipe) {
-        direction = distanceX > 0 ? 'left' : 'right';
-      } else {
-        direction = distanceY > 0 ? 'up' : 'down';
-      }
-
-      // Add swipe indicator
-      const indicatorId = `swipe-${Date.now()}-${Math.random()}`;
-      setSwipeIndicators(prev => [...prev, {
-        id: indicatorId,
-        direction,
-        x: touchStart.x,
-        y: touchStart.y
-      }]);
-
-      // Call the swipe handler
-      onSwipe(swipeStartPiece.row, swipeStartPiece.col, direction);
-    }
-
-    // Reset touch state
-    setTouchStart(null);
-    setTouchEnd(null);
-    setSwipeStartPiece(null);
   };
 
   const formatTime = (seconds: number): string => {
@@ -142,6 +185,19 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
     if (!hintState?.isVisible) return false;
     return (hintState.piece1?.row === row && hintState.piece1?.col === col) ||
            (hintState.piece2?.row === row && hintState.piece2?.col === col);
+  };
+
+  const isPieceInSwipePreview = (row: number, col: number): boolean => {
+    if (!swipePreview) return false;
+    return (swipePreview.fromRow === row && swipePreview.fromCol === col) ||
+           (swipePreview.toRow === row && swipePreview.toCol === col);
+  };
+
+  const getSwipePreviewRole = (row: number, col: number): 'source' | 'target' | null => {
+    if (!swipePreview) return null;
+    if (swipePreview.fromRow === row && swipePreview.fromCol === col) return 'source';
+    if (swipePreview.toRow === row && swipePreview.toCol === col) return 'target';
+    return null;
   };
 
   // Remove local clearingPieceIds state and related logic
@@ -209,6 +265,8 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                 row.map((piece, colIndex) => {
                   const isSwapping = swappingPieces.some(p => p.row === rowIndex && p.col === colIndex);
                   const isHinted = isPieceHinted(rowIndex, colIndex);
+                  const isInSwipePreview = isPieceInSwipePreview(rowIndex, colIndex);
+                  const swipePreviewRole = getSwipePreviewRole(rowIndex, colIndex);
                   // Add animation class if piece is being cleared
                   const animClass = isClearing(piece) ? 'animate-piece-clear' : '';
                   return (
@@ -226,6 +284,8 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                             : 'bg-transparent border-transparent'
                         }
                         ${isHinted ? 'ring-4 ring-yellow-300 animate-hint-glow' : ''}
+                        ${isInSwipePreview && swipePreviewRole === 'source' ? 'ring-4 ring-blue-400 bg-blue-200/80 animate-swipe-preview-source' : ''}
+                        ${isInSwipePreview && swipePreviewRole === 'target' ? 'ring-4 ring-green-400 bg-green-200/80 animate-swipe-preview-target' : ''}
                         ${isProcessing ? 'pointer-events-none opacity-70' : ''}
                         ${isSwapping ? 'piece-swap animate-bounce' : ''}
                         ${animClass}
@@ -234,8 +294,8 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                       onTouchMove={onTouchMove}
                       onTouchEnd={onTouchEnd}
                       onClick={() => {
-                        // Fallback for desktop/mouse users
-                        if (!touchStart) {
+                        // Fallback for desktop/mouse users - only if no touch interaction
+                        if (!touchStart && !hasTriggeredSwipe) {
                           onPieceClick(rowIndex, colIndex);
                         }
                       }}
@@ -250,6 +310,18 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                       {isHinted && hintState?.isVisible && (
                         <span className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                           <span className="text-yellow-300 text-lg sm:text-xl md:text-2xl animate-hint-star-glow animate-pulse drop-shadow-md">⭐️</span>
+                        </span>
+                      )}
+                      
+                      {/* Swipe direction arrow overlay */}
+                      {isInSwipePreview && swipePreviewRole === 'source' && swipePreview && (
+                        <span className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                          <span className="text-blue-600 text-lg sm:text-xl md:text-2xl animate-swipe-direction drop-shadow-lg font-bold">
+                            {swipePreview.direction === 'up' && '⬆️'}
+                            {swipePreview.direction === 'down' && '⬇️'}
+                            {swipePreview.direction === 'left' && '⬅️'}
+                            {swipePreview.direction === 'right' && '➡️'}
+                          </span>
                         </span>
                       )}
                     </button>

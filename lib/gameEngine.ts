@@ -9,7 +9,7 @@ export class BeachMatchEngine {
   private static lastSongQuizTime: number = Date.now();
   private static lastSpaceQuizTime: number = Date.now();
   private static lastBeachQuizTime: number = Date.now();
-  private static readonly QUIZ_COOLDOWN = 120 * 1000; // 2 minutes in milliseconds
+  private static readonly QUIZ_COOLDOWN = 30 * 1000; // 30 seconds in milliseconds
   
   // Hint system
   private static readonly HINT_DELAY = 3000; // 3 seconds (reduced from 6)
@@ -374,11 +374,21 @@ export class BeachMatchEngine {
   }
 
   static shouldTriggerQuiz(pieceType: PieceType, totalMatches: number): boolean {
-    // Only trigger after 1st match and beyond
-    if (totalMatches < 1) return false;
+    console.log(`[DEBUG] shouldTriggerQuiz called with pieceType: ${pieceType}, totalMatches: ${totalMatches}`);
     
     const quizType = this.determineQuizType(pieceType);
-    if (!quizType) return false;
+    console.log(`[DEBUG] determineQuizType returned: ${quizType}`);
+    
+    if (!quizType) {
+      console.log(`[DEBUG] No quiz type determined, returning false`);
+      return false;
+    }
+    
+    // All trivia types require at least 2 matches
+    if (totalMatches < 2) {
+      console.log(`[DEBUG] Need at least 2 matches, but only have ${totalMatches}`);
+      return false;
+    }
     
     const now = Date.now();
     let lastQuizTime: number;
@@ -398,10 +408,14 @@ export class BeachMatchEngine {
     }
     
     const timeSinceLastQuiz = now - lastQuizTime;
+    console.log(`[DEBUG] Time since last ${quizType} quiz: ${timeSinceLastQuiz}ms (cooldown: ${this.QUIZ_COOLDOWN}ms)`);
     
     // Only trigger if enough time has passed AND random chance succeeds
     if (timeSinceLastQuiz >= this.QUIZ_COOLDOWN) {
-      if (Math.random() < 0.3) { // 30% chance when cooldown is ready
+      const randomChance = Math.random();
+      console.log(`[DEBUG] Cooldown passed, random chance: ${randomChance} (need < 0.5)`);
+      
+      if (randomChance < 0.5) { // 50% chance when cooldown is ready
         // Update the appropriate timer
         switch (quizType) {
           case 'song':
@@ -415,9 +429,13 @@ export class BeachMatchEngine {
             break;
         }
         
-        console.log(`${quizType} quiz triggered for ${pieceType}! Next quiz available in 2 minutes.`);
+        console.log(`${quizType} quiz triggered for ${pieceType}! Next quiz available in 30 seconds.`);
         return true;
+      } else {
+        console.log(`[DEBUG] Random chance failed, no quiz triggered`);
       }
+    } else {
+      console.log(`[DEBUG] Cooldown not passed yet`);
     }
     
     return false;
