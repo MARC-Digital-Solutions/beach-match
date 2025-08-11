@@ -70,6 +70,7 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
   const maxSwipeTime = 500; // Maximum time for a swipe gesture (ms)
   // Simplified and more responsive swipe detection
   const onTouchStart = (e: React.TouchEvent, row: number, col: number) => {
+    e.preventDefault(); // Prevent scrolling and other default behaviors
     const touch = e.touches[0];
     const startTime = Date.now();
     
@@ -82,6 +83,7 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
 
   const onTouchMove = (e: React.TouchEvent) => {
     if (!touchStart || !swipeStartPiece || hasTriggeredSwipe || isProcessing) return;
+    e.preventDefault(); // Prevent scrolling during swipe
     
     const touch = e.touches[0];
     const deltaX = touch.clientX - touchStart.x;
@@ -329,7 +331,15 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
         {/* Beautiful Beach-Themed Game Container */}
         <div className="bg-gradient-to-b from-blue-500 via-orange-400 to-red-500 p-4 sm:p-6 md:p-8 rounded-xl shadow-2xl border-4 border-white/20">
           {/* Frosted Glass Game Board */}
-          <div className={`bg-gradient-to-br from-white/20 via-white/10 to-transparent backdrop-blur-md rounded-xl p-4 sm:p-6 md:p-8 border border-white/30 transition-all duration-500 ${isShuffling ? 'animate-shake' : ''}`} style={{position:'relative'}}>
+          <div 
+            className={`game-board-container bg-gradient-to-br from-white/20 via-white/10 to-transparent backdrop-blur-md rounded-xl p-4 sm:p-6 md:p-8 border border-white/30 transition-all duration-500 ${isShuffling ? 'animate-shake' : ''}`} 
+            style={{
+              position:'relative',
+              touchAction: 'none', // Prevent all touch gestures including scroll
+              userSelect: 'none',  // Prevent text selection
+              WebkitUserSelect: 'none'
+            }}
+          >
             <div className="relative grid grid-cols-8 gap-1 sm:gap-2 md:gap-3 lg:gap-2">
               {grid.map((row, rowIndex) =>
                 row.map((piece, colIndex) => {
@@ -342,7 +352,7 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                   return (
                     <button
                       key={`${rowIndex}-${colIndex}`}
-                      className={`
+                      className={`game-piece
                         w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-16 lg:h-16 rounded-lg flex items-center justify-center
                         text-3xl sm:text-4xl md:text-5xl lg:text-4xl transition-all duration-200 transform
                         border-2 shadow-lg font-bold relative touch-manipulation
@@ -409,46 +419,51 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
             <div className="text-white font-bold text-lg sm:text-xl drop-shadow-2xl mb-2 tracking-wide">
               BEACH MATCH
             </div>
-            <div className="flex justify-between items-center bg-black/20 rounded-lg p-2 sm:p-4 border border-white/30 backdrop-blur-sm">
-              {/* Score */}
-              <div className="text-center">
-                <div className="text-yellow-300 text-sm sm:text-lg font-bold drop-shadow-lg">
-                  {score.toLocaleString()}
-                </div>
-                <div className="text-white/80 text-xs uppercase tracking-wider">Score</div>
-              </div>
-              {/* Lives */}
-              <div className="text-center">
-                <div className="text-red-400 text-sm sm:text-lg font-bold drop-shadow-lg">
-                  {'❤️'.repeat(Math.max(0, lives))}
-                  {lives === 0 && '💀'}
-                </div>
-                <div className="text-white/80 text-xs uppercase tracking-wider">Lives</div>
-                <div className="text-yellow-300/60 text-[8px] sm:text-[10px] mt-1">
-                  🕐 Stream = Keep
-                </div>
-              </div>
-              {/* Combo */}
-              <div className="text-center">
-                <div className="text-purple-300 text-sm sm:text-lg font-bold drop-shadow-lg">
-                  {combo > 0 ? `${combo}x` : '-'}
-                </div>
-                <div className="text-white/80 text-xs uppercase tracking-wider">Combo</div>
-              </div>
-              {/* Stream Time or Game Over Countdown */}
-              <div className="text-center">
-                {typeof gameOverCountdown === 'number' && gameOverCountdown > 0 ? (
-                  <>
-                    <div className="text-white text-lg sm:text-2xl font-extrabold drop-shadow-lg animate-bounce">
-                      {Math.floor(gameOverCountdown / 60)}:{(gameOverCountdown % 60).toString().padStart(2, '0')}
-                    </div>
-                    <div className="text-white text-xs uppercase tracking-wider font-bold animate-pulse">TIME LEFT</div>
-                  </>
-                ) : (
-                  <div className="text-white/60 text-xs">
-                    Countdown: {gameOverCountdown === null ? 'null' : gameOverCountdown}
+            <div className="flex flex-wrap justify-between items-center bg-black/20 rounded-lg p-2 sm:p-4 border border-white/30 backdrop-blur-sm gap-2">
+              {/* Top Row - Score and Lives */}
+              <div className="w-full flex justify-between items-center">
+                <div className="text-center flex-1">
+                  <div className="text-yellow-300 text-sm sm:text-lg font-bold drop-shadow-lg">
+                    {score.toLocaleString()}
                   </div>
-                )}
+                  <div className="text-white/80 text-xs uppercase tracking-wider">Score</div>
+                </div>
+                <div className="text-center flex-1">
+                  <div className="text-red-400 text-sm sm:text-lg font-bold drop-shadow-lg">
+                    {'❤️'.repeat(Math.max(0, lives))}
+                    {lives === 0 && '💀'}
+                  </div>
+                  <div className="text-white/80 text-xs uppercase tracking-wider">Lives</div>
+                </div>
+              </div>
+              
+              {/* Bottom Row - Combo and Timer */}
+              <div className="w-full flex justify-between items-center">
+                <div className="text-center flex-1">
+                  <div className="text-purple-300 text-sm sm:text-lg font-bold drop-shadow-lg">
+                    {combo > 0 ? `${combo}x` : '-'}
+                  </div>
+                  <div className="text-white/80 text-xs uppercase tracking-wider">Combo</div>
+                </div>
+                <div className="text-center flex-1">
+                  {typeof gameOverCountdown === 'number' && gameOverCountdown > 0 ? (
+                    <>
+                      <div className="text-white text-sm sm:text-lg font-extrabold drop-shadow-lg animate-bounce">
+                        {Math.floor(gameOverCountdown / 60)}:{(gameOverCountdown % 60).toString().padStart(2, '0')}
+                      </div>
+                      <div className="text-white text-xs uppercase tracking-wider font-bold animate-pulse">TIME LEFT</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-green-300 text-xs font-bold">
+                        🕐 Stream = Keep Lives
+                      </div>
+                      <div className="text-white/60 text-xs">
+                        Stay Connected
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
             {/* Enhanced Hint Indicator */}

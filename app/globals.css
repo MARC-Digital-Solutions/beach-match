@@ -244,4 +244,24 @@ button:focus-visible {
   background-color: rgba(59, 130, 246, 0.3);
   animation: touch-ripple 0.6s linear;
   pointer-events: none;
+}
+
+/* Prevent scrolling on game board */
+.game-board-container {
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Better mobile touch handling */
+.game-piece {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 } 
