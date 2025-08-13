@@ -304,7 +304,7 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
 
   // Main return for the game UI
   return (
-    <div className="w-full max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-xl mx-auto relative overflow-visible">
+    <div className="w-full max-w-sm sm:max-w-md md:max-w-2xl mx-auto relative overflow-visible">
       {/* Swipe Indicators */}
       {swipeIndicators.map((indicator) => (
         <SwipeIndicator
@@ -340,7 +340,7 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
               WebkitUserSelect: 'none'
             }}
           >
-            <div className="relative grid grid-cols-8 gap-2 sm:gap-3 md:gap-4 lg:gap-3">
+            <div className="relative grid grid-cols-8 gap-1 sm:gap-2 md:gap-3 lg:gap-2">
               {grid.map((row, rowIndex) =>
                 row.map((piece, colIndex) => {
                   const isSwapping = swappingPieces.some(p => p.row === rowIndex && p.col === colIndex);
@@ -353,8 +353,8 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                     <button
                       key={`${rowIndex}-${colIndex}`}
                       className={`game-piece
-                        w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-20 lg:h-20 rounded-lg flex items-center justify-center
-                        text-3xl sm:text-4xl md:text-6xl lg:text-4xl transition-all duration-200 transform
+                        w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-16 lg:h-16 rounded-lg flex items-center justify-center
+                        text-3xl sm:text-4xl md:text-5xl lg:text-4xl transition-all duration-200 transform
                         border-2 shadow-lg font-bold relative touch-manipulation
                         ${piece ? 'hover:scale-105 active:scale-95' : ''}
                         ${isPieceSelected(rowIndex, colIndex) 
