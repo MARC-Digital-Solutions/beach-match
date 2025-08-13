@@ -340,7 +340,7 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
               WebkitUserSelect: 'none'
             }}
           >
-            <div className="relative grid grid-cols-8 gap-x-2 gap-y-2 sm:gap-x-2 sm:gap-y-2 md:gap-x-3 md:gap-y-3 lg:gap-x-2 lg:gap-y-2">
+            <div className="relative grid grid-cols-8 gap-2">
               {grid.map((row, rowIndex) =>
                 row.map((piece, colIndex) => {
                   const isSwapping = swappingPieces.some(p => p.row === rowIndex && p.col === colIndex);

@@ -62,18 +62,7 @@
   animation: float 3s ease-in-out infinite;
 }
 
-/* Responsive design helpers for 8x8 grid */
-@media (max-width: 640px) {
-  .match-grid {
-    padding: 0.5rem;
-    gap: 0.125rem;
-  }
-  
-  .match-piece {
-    padding: 0.25rem;
-    font-size: 0.6rem;
-  }
-}
+/* Removed conflicting grid styles */
 
 /* Missing animations for intro sequence */
 @keyframes fade-in {
