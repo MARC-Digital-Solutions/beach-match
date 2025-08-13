@@ -9,7 +9,7 @@ export class AudioManager {
   private static isStreamPlaying = false;
   private static streamStartTime: number | null = null;
   private static currentClipIndex = 0;
-  
+
   // Game audio clips
   private static readonly GAME_START_CLIPS = [
     '/WSBH ACA SHOT GUNS_15_WSBH_Cut12a_Aca.wav',
