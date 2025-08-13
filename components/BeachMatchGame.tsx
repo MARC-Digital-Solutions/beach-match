@@ -390,6 +390,13 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                           {getPieceIcon(piece.type)}
                         </span>
                       )}
+                      
+                      {/* Sparkle effect for clearing pieces */}
+                      {isClearing(piece) && (
+                        <span className="piece-sparkle">
+                          ✨
+                        </span>
+                      )}
                       {/* Hint star overlay - no scaling, just a flashing star */}
                       {isHinted && hintState?.isVisible && (
                         <span className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">

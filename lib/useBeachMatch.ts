@@ -406,8 +406,8 @@ export function useBeachMatch(gameStarted: boolean = false) {
         match.pieces.forEach(piece => matchedIds.push(piece.id));
       });
       setClearingPieceIds(matchedIds);
-      // Wait for animation duration
-      await new Promise(resolve => setTimeout(resolve, 220));
+      // Wait for enhanced animation duration (increased from 220ms to 450ms)
+      await new Promise(resolve => setTimeout(resolve, 450));
       setClearingPieceIds([]);
 
       // Trigger board flash for any 4- or 5-piece match
