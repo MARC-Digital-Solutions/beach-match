@@ -5,11 +5,9 @@ export class BeachMatchEngine {
   private static readonly PIECE_TYPES: PieceType[] = ['beach_ball', 'microphone', 'rocket', 'palm_tree', 'boat'];
   private static readonly MIN_MATCH = 3;
   
-  // Quiz cooldown timers (30 seconds = 30000ms)
-  private static lastSongQuizTime: number = Date.now();
-  private static lastSpaceQuizTime: number = Date.now();
-  private static lastBeachQuizTime: number = Date.now();
-  private static readonly QUIZ_COOLDOWN = 30 * 1000; // 30 seconds in milliseconds
+  // Shared trivia cooldown timer (2 minutes = 120000ms)
+  private static lastTriviaTime: number = 0; // Initialize to 0 to allow first trivia immediately
+  private static readonly QUIZ_COOLDOWN = 2 * 60 * 1000; // 2 minutes in milliseconds
   
   // Hint system
   private static readonly HINT_DELAY = 3000; // 3 seconds (reduced from 6)
@@ -391,51 +389,25 @@ export class BeachMatchEngine {
     }
     
     const now = Date.now();
-    let lastQuizTime: number;
+    const timeSinceLastTrivia = now - this.lastTriviaTime;
+    console.log(`[DEBUG] Time since last trivia (any type): ${timeSinceLastTrivia}ms (cooldown: ${this.QUIZ_COOLDOWN}ms)`);
     
-    switch (quizType) {
-      case 'song':
-        lastQuizTime = this.lastSongQuizTime;
-        break;
-      case 'space_coast':
-        lastQuizTime = this.lastSpaceQuizTime;
-        break;
-      case 'florida_beach':
-        lastQuizTime = this.lastBeachQuizTime;
-        break;
-      default:
-        return false;
-    }
-    
-    const timeSinceLastQuiz = now - lastQuizTime;
-    console.log(`[DEBUG] Time since last ${quizType} quiz: ${timeSinceLastQuiz}ms (cooldown: ${this.QUIZ_COOLDOWN}ms)`);
-    
-    // Only trigger if enough time has passed AND random chance succeeds
-    if (timeSinceLastQuiz >= this.QUIZ_COOLDOWN) {
+    // Only trigger if enough time has passed since ANY trivia AND random chance succeeds
+    if (timeSinceLastTrivia >= this.QUIZ_COOLDOWN) {
       const randomChance = Math.random();
       console.log(`[DEBUG] Cooldown passed, random chance: ${randomChance} (need < 0.5)`);
       
       if (randomChance < 0.5) { // 50% chance when cooldown is ready
-        // Update the appropriate timer
-        switch (quizType) {
-          case 'song':
-            this.lastSongQuizTime = now;
-            break;
-          case 'space_coast':
-            this.lastSpaceQuizTime = now;
-            break;
-          case 'florida_beach':
-            this.lastBeachQuizTime = now;
-            break;
-        }
+        // Update the shared trivia timer
+        this.lastTriviaTime = now;
         
-        console.log(`${quizType} quiz triggered for ${pieceType}! Next quiz available in 30 seconds.`);
+        console.log(`${quizType} quiz triggered for ${pieceType}! Next trivia (any type) available in 2 minutes.`);
         return true;
       } else {
         console.log(`[DEBUG] Random chance failed, no quiz triggered`);
       }
     } else {
-      console.log(`[DEBUG] Cooldown not passed yet`);
+      console.log(`[DEBUG] Cooldown not passed yet (need ${Math.ceil((this.QUIZ_COOLDOWN - timeSinceLastTrivia) / 1000)} more seconds)`);
     }
     
     return false;
