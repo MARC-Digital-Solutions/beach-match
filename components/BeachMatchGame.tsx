@@ -340,7 +340,7 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
               WebkitUserSelect: 'none'
             }}
           >
-            <div className="relative grid grid-cols-8">
+            <div className="relative grid grid-cols-8 gap-2 p-2">
               {grid.map((row, rowIndex) =>
                 row.map((piece, colIndex) => {
                   const isSwapping = swappingPieces.some(p => p.row === rowIndex && p.col === colIndex);
@@ -352,9 +352,9 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                   return (
                     <button
                       key={`${rowIndex}-${colIndex}`}
-                      className={`game-piece m-1
-                        w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-16 lg:h-16 rounded-lg flex items-center justify-center
-                        text-3xl sm:text-4xl md:text-5xl lg:text-4xl transition-all duration-200 transform
+                      className={`game-piece
+                        w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-10 lg:h-10 rounded-lg flex items-center justify-center
+                        text-lg sm:text-xl md:text-2xl lg:text-xl transition-all duration-200 transform
                         border-2 shadow-lg font-bold relative touch-manipulation
                         ${piece ? 'hover:scale-105 active:scale-95' : ''}
                         ${isPieceSelected(rowIndex, colIndex) 
