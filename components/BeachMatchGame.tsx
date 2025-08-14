@@ -63,6 +63,13 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
     y: number;
   }>>([]);
   const [hasTriggeredSwipe, setHasTriggeredSwipe] = useState(false);
+  const [connectionLines, setConnectionLines] = useState<Array<{
+    id: string;
+    fromRow: number;
+    fromCol: number;
+    toRow: number;
+    toCol: number;
+  }>>([]);
 
   // Optimized swipe sensitivity
   const minSwipeDistance = 20; // Very responsive detection
@@ -133,6 +140,21 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
         y: touchStart.y
       }]);
       
+      // Add connection line effect
+      const connectionId = `connection-${Date.now()}-${Math.random()}`;
+      setConnectionLines(prev => [...prev, {
+        id: connectionId,
+        fromRow: swipeStartPiece.row,
+        fromCol: swipeStartPiece.col,
+        toRow: targetRow,
+        toCol: targetCol
+      }]);
+      
+      // Remove connection line after animation
+      setTimeout(() => {
+        setConnectionLines(prev => prev.filter(line => line.id !== connectionId));
+      }, 400);
+      
       // Execute swipe
       onSwipe(swipeStartPiece.row, swipeStartPiece.col, direction);
       
@@ -156,6 +178,30 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
 
   const removeSwipeIndicator = (id: string) => {
     setSwipeIndicators(prev => prev.filter(indicator => indicator.id !== id));
+  };
+
+  const calculateConnectionLine = (fromRow: number, fromCol: number, toRow: number, toCol: number) => {
+    const pieceSize = 64; // Approximate piece size in pixels
+    const gap = 4; // Gap between pieces
+    const totalPieceSize = pieceSize + gap;
+    
+    const fromX = fromCol * totalPieceSize + pieceSize / 2;
+    const fromY = fromRow * totalPieceSize + pieceSize / 2;
+    const toX = toCol * totalPieceSize + pieceSize / 2;
+    const toY = toRow * totalPieceSize + pieceSize / 2;
+    
+    const deltaX = toX - fromX;
+    const deltaY = toY - fromY;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+    
+    return {
+      left: fromX,
+      top: fromY,
+      width: distance,
+      transform: `rotate(${angle}deg)`,
+      transformOrigin: '0 50%'
+    };
   };
 
   // Mouse support for desktop
@@ -212,6 +258,21 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
         x: touchStart.x,
         y: touchStart.y
       }]);
+      
+      // Add connection line effect for mouse
+      const connectionId = `connection-${Date.now()}-${Math.random()}`;
+      setConnectionLines(prev => [...prev, {
+        id: connectionId,
+        fromRow: swipeStartPiece.row,
+        fromCol: swipeStartPiece.col,
+        toRow: targetRow,
+        toCol: targetCol
+      }]);
+      
+      // Remove connection line after animation
+      setTimeout(() => {
+        setConnectionLines(prev => prev.filter(line => line.id !== connectionId));
+      }, 400);
       
       onSwipe(swipeStartPiece.row, swipeStartPiece.col, direction);
       
@@ -315,6 +376,25 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
           onComplete={() => removeSwipeIndicator(indicator.id)}
         />
       ))}
+      
+      {/* Connection Lines */}
+      {connectionLines.map((line) => {
+        const lineStyle = calculateConnectionLine(line.fromRow, line.fromCol, line.toRow, line.toCol);
+        return (
+          <div
+            key={line.id}
+            className="swap-connection-line"
+            style={{
+              position: 'absolute',
+              left: `${lineStyle.left}px`,
+              top: `${lineStyle.top}px`,
+              width: `${lineStyle.width}px`,
+              transform: lineStyle.transform,
+              transformOrigin: lineStyle.transformOrigin
+            }}
+          />
+        );
+      })}
       <div style={{position:'relative'}}>
         {/* Swipe Row Overlays */}
         {matchedRows.map(rowIdx => (
@@ -367,7 +447,7 @@ const BeachMatchGame: React.FC<BeachMatchGameProps> = ({
                         ${isInSwipePreview && swipePreviewRole === 'source' ? 'ring-4 ring-blue-400 bg-blue-200/80 animate-swipe-preview-source' : ''}
                         ${isInSwipePreview && swipePreviewRole === 'target' ? 'ring-4 ring-green-400 bg-green-200/80 animate-swipe-preview-target' : ''}
                         ${isProcessing ? 'pointer-events-none opacity-70' : ''}
-                        ${isSwapping ? 'piece-swap animate-bounce' : ''}
+                        ${isSwapping ? 'piece-swap-enhanced' : ''}
                         ${animClass}
                       `}
                       onTouchStart={(e) => onTouchStart(e, rowIndex, colIndex)}
